@@ -1,0 +1,2201 @@
+<!DOCTYPE html>
+<html lang="ja" class="h-full bg-slate-950 text-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bitrade X - 組織図管理システム</title>
+    <!-- Tailwind CSS for rich interface styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for premium Japanese & Modern typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Noto Sans JP', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eef8ff',
+                            100: '#d8eeff',
+                            200: '#b9e0ff',
+                            300: '#89ceff',
+                            400: '#52b2ff',
+                            500: '#2a93ff',
+                            600: '#1373f5',
+                            700: '#0d5ce3',
+                            800: '#114ab8',
+                            900: '#144091',
+                            950: '#112959',
+                        },
+                        tech: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                        },
+                        rank: {
+                            V0: '#64748b', // Slate
+                            V1: '#b45309', // Bronze/Amber
+                            V2: '#94a3b8', // Silver
+                            V3: '#eab308', // Gold
+                            V4: '#06b6d4', // Cyan
+                            V5: '#10b981', // Emerald
+                            V6: '#ec4899', // Fuchsia/Pink
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar styled for dark tech theme */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b1329;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+
+        /* Organizational Tree Line Styles */
+        .tree ul {
+            padding-top: 20px;
+            position: relative;
+            transition: all 0.5s;
+            display: flex;
+            justify-content: center;
+        }
+        .tree li {
+            float: left;
+            text-align: center;
+            list-style-type: none;
+            position: relative;
+            padding: 20px 0 0 0;
+            transition: all 0.5s;
+        }
+        /* Vertical connector lines using CSS pseudo elements */
+        .tree li::before, .tree li::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 50%;
+            border-top: 2px solid #334155;
+            width: 50%;
+            height: 20px;
+        }
+        .tree li::after {
+            right: auto;
+            left: 50%;
+            border-left: 2px solid #334155;
+        }
+        /* Remove connectors from single child nodes */
+        .tree li:only-child::after, .tree li:only-child::before {
+            display: none;
+        }
+        .tree li:only-child {
+            padding-top: 0;
+        }
+        .tree li:only-child::before {
+            display: none;
+        }
+        .tree li:first-child::before, .tree li:last-child::after {
+            border: 0 none;
+        }
+        .tree li:last-child::before {
+            border-right: 2px solid #334155;
+            border-radius: 0 5px 0 0;
+        }
+        .tree li:first-child::after {
+            border-radius: 5px 0 0 0;
+        }
+        /* Parent connector lines down to child list */
+        .tree ul ul::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            border-left: 2px solid #334155;
+            width: 0;
+            height: 20px;
+        }
+
+        /* Glowing style for V6 top level tier */
+        .glow-v6 {
+            box-shadow: 0 0 15px rgba(236, 72, 153, 0.4);
+            animation: pulseGlow 2s infinite alternate;
+        }
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 10px rgba(236, 72, 153, 0.3); border-color: rgba(236, 72, 153, 0.6); }
+            100% { box-shadow: 0 0 22px rgba(236, 72, 153, 0.7); border-color: rgba(236, 72, 153, 1); }
+        }
+
+        /* Interactive active state styling */
+        .node-active {
+            outline: 2px solid #3b82f6;
+            outline-offset: 4px;
+        }
+
+        /* Drag & Pan Canvas container */
+        .canvas-area {
+            cursor: grab;
+        }
+        .canvas-area:active {
+            cursor: grabbing;
+        }
+        
+        /* Smooth transitions for slide-in sidebar on mobile */
+        @media (max-width: 1023px) {
+            .mobile-sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .mobile-sidebar.open {
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col font-sans antialiased overflow-hidden select-none">
+
+    <!-- Password Protection Gate Overlay -->
+    <div id="passwordGate" class="fixed inset-0 bg-slate-950 z-50 flex flex-col items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 md:p-8 shadow-2xl text-center space-y-6">
+            <!-- App Logo / Symbol inside gate -->
+            <div class="inline-flex bg-gradient-to-tr from-brand-600 to-cyan-400 p-4 rounded-2xl shadow-xl shadow-brand-950/40 text-white animate-bounce">
+                <i class="fa-solid fa-shield-halved text-3xl"></i>
+            </div>
+            
+            <div class="space-y-1.5">
+                <h2 class="text-xl md:text-2xl font-bold tracking-wider text-white">Security Gate</h2>
+                <p class="text-xs text-slate-400">Bitrade X 組織図管理システムは保護されています</p>
+            </div>
+
+            <!-- Password Form -->
+            <div class="space-y-4 pt-2">
+                <div class="relative">
+                    <input type="password" id="gatePasswordInput" onkeydown="handleGateKeyDown(event)" placeholder="パスワードを入力してください" 
+                           class="w-full bg-slate-850 text-slate-100 border border-slate-700 rounded-xl px-4 py-3 text-center text-sm focus:outline-none focus:border-brand-500 font-mono tracking-widest placeholder-slate-500">
+                    <span class="absolute left-4 top-3.5 text-slate-500">
+                        <i class="fa-solid fa-lock"></i>
+                    </span>
+                </div>
+                
+                <button onclick="checkPassword()" class="w-full bg-brand-600 hover:bg-brand-500 active:scale-95 text-white font-medium py-3 rounded-xl transition text-sm shadow-lg shadow-brand-900/30 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-unlock-keyhole"></i> ロック解除
+                </button>
+                
+                <p class="text-[10px] text-slate-500 italic">
+                    ※初期パスワード： <span class="font-mono text-slate-400 select-all">bitradex777</span>
+                </p>
+                
+                <div id="gateErrorMsg" class="text-xs text-rose-400 font-medium hidden">
+                    パスワードが正しくありません。
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP INTERFACE (Unlocked) -->
+    <!-- App Header & Navigation -->
+    <header class="bg-slate-900 border-b border-slate-800 px-4 md:px-6 py-3.5 flex items-center justify-between gap-4 shrink-0 z-30 relative">
+        <div class="flex items-center space-x-3">
+            <!-- Mobile Sidebar Toggle Button -->
+            <button onclick="toggleSidebar()" class="lg:hidden p-2 text-slate-400 hover:text-white bg-slate-800 rounded-lg focus:outline-none" title="メニューを開閉">
+                <i class="fa-solid fa-bars text-lg"></i>
+            </button>
+            <div class="bg-gradient-to-tr from-brand-600 to-cyan-400 p-2 rounded-xl shadow-lg hidden xs:block">
+                <i class="fa-solid fa-sitemap text-lg text-white"></i>
+            </div>
+            <div>
+                <h1 class="text-base md:text-xl font-bold tracking-wider text-white flex items-center gap-1.5">
+                    Bitrade X <span class="text-[10px] bg-brand-500/20 text-brand-400 font-medium px-1.5 py-0.5 rounded border border-brand-500/30">MOBILE READY</span>
+                </h1>
+                <p class="text-[10px] text-slate-400 font-mono">Series Hierarchy System</p>
+            </div>
+        </div>
+        
+        <!-- Top Toolbar Actions -->
+        <div class="flex items-center gap-1.5 text-xs">
+            <button onclick="exportJSON()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white p-2 md:px-3 py-2 rounded-lg transition flex items-center gap-1.5 border border-slate-700" title="バックアップ">
+                <i class="fa-solid fa-file-export"></i> <span class="hidden sm:inline">書き出し</span>
+            </button>
+            <label class="bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white p-2 md:px-3 py-2 rounded-lg transition flex items-center gap-1.5 border border-slate-700 cursor-pointer" title="復元">
+                <i class="fa-solid fa-file-import"></i> <span class="hidden sm:inline">復元</span>
+                <input type="file" id="importFile" onchange="importJSON(event)" class="hidden" accept=".json">
+            </label>
+            <button onclick="resetToDemo()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white p-2 md:px-3 py-2 rounded-lg transition flex items-center gap-1.5 border border-slate-700" title="デモに戻す">
+                <i class="fa-solid fa-rotate"></i> <span class="hidden sm:inline">デモ</span>
+            </button>
+            <!-- Lock Button (Logout) -->
+            <button onclick="lockApp()" class="bg-rose-950/40 hover:bg-rose-900/40 text-rose-300 hover:text-rose-200 p-2 md:px-3 py-2 rounded-lg transition flex items-center gap-1.5 border border-rose-900/40 ml-1" title="画面をロックする">
+                <i class="fa-solid fa-lock"></i> <span class="hidden sm:inline">ロック</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Workspace Container -->
+    <main class="flex-1 flex overflow-hidden relative">
+
+        <!-- Mobile overlay background for active drawer -->
+        <div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-950/60 z-20 hidden lg:hidden backdrop-blur-sm"></div>
+
+        <!-- Left Sidebar: Tools, Search & Info Panel -->
+        <aside id="sidebar" class="w-80 md:w-96 bg-slate-900 border-r border-slate-800 flex flex-col shrink-0 overflow-y-auto z-25 absolute lg:static inset-y-0 left-0 mobile-sidebar lg:transform-none">
+            
+            <!-- Quick edit top leader directly / AI Assistant Editor -->
+            <div class="p-4 border-b border-slate-800 bg-brand-950/20 flex flex-col gap-2">
+                <!-- AI Assistant Trigger -->
+                <button onclick="openAronaModal()" class="w-full bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-3 px-4 rounded-xl transition shadow-lg flex items-center justify-center gap-2 text-xs border border-cyan-400/20">
+                    <i class="fa-solid fa-wand-magic-sparkles text-sm text-yellow-300 animate-pulse"></i>
+                    <span>✨ AIに頼んで編集する</span>
+                </button>
+                
+                <button onclick="editTopLeader()" class="w-full bg-slate-850 hover:bg-slate-800 text-slate-200 font-medium py-2 px-4 rounded-lg transition flex items-center justify-center gap-2 text-xs border border-slate-700">
+                    <i class="fa-solid fa-crown text-amber-500 text-sm"></i>
+                    <span>👑 一番上（ルート）を編集</span>
+                </button>
+            </div>
+
+            <!-- Quick search area -->
+            <div class="p-4 border-b border-slate-800 bg-slate-950/30">
+                <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <i class="fa-solid fa-magnifying-glass text-brand-400"></i> メンバー検索
+                </h2>
+                <div class="relative">
+                    <input type="text" id="searchInput" oninput="handleSearch()" placeholder="名前、ユーザーID、紹介コード..." 
+                           class="w-full bg-slate-800 text-slate-200 border border-slate-700 rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 placeholder-slate-500">
+                    <span class="absolute left-3.5 top-2.5 text-slate-500">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </span>
+                    <button id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute right-3 top-2.5 text-slate-400 hover:text-white">
+                        <i class="fa-solid fa-circle-xmark"></i>
+                    </button>
+                </div>
+                <!-- Search Result Indicator -->
+                <div id="searchResultsCount" class="text-xs text-brand-400 mt-2 font-medium hidden">
+                    検索結果: 0 件
+                </div>
+            </div>
+
+            <!-- Detail Editor & Creator Area -->
+            <div class="p-4 border-b border-slate-800 flex-1">
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                        <i class="fa-solid fa-user-gear text-cyan-400"></i> 詳細・編集・追加
+                    </h2>
+                    <span id="selectedIndicator" class="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded border border-slate-700 font-mono">
+                        未選択
+                    </span>
+                </div>
+
+                <!-- Editor Form (Hidden/Shown dynamically) -->
+                <div id="editorPlaceholder" class="bg-slate-950/40 border border-dashed border-slate-800 rounded-xl p-8 text-center text-slate-500 my-4">
+                    <i class="fa-solid fa-mouse-pointer text-3xl mb-3 text-slate-600 block"></i>
+                    <p class="text-xs">ツリーからメンバーをクリック、または上の「一番上を編集」を押して編集してください。</p>
+                </div>
+
+                <div id="editorContainer" class="hidden space-y-4">
+                    <!-- Display Mode Selector (New Feature: Gold / Normal / Minimal) -->
+                    <div>
+                        <label class="block text-xs text-slate-400 font-medium mb-1.5">ツリー内表示スタイル（重要度・サイズ制限）</label>
+                        <div class="grid grid-cols-3 gap-1.5 text-xs">
+                            <button onclick="setDisplayMode('gold')" id="dispBtn_gold" class="py-2 px-1.5 rounded-lg border border-yellow-600/40 bg-yellow-950/20 text-yellow-500 hover:bg-yellow-950/40 transition flex flex-col items-center gap-1">
+                                <i class="fa-solid fa-star text-xs"></i>
+                                <span class="scale-90">⭐ 重要(強調)</span>
+                            </button>
+                            <button onclick="setDisplayMode('normal')" id="dispBtn_normal" class="py-2 px-1.5 rounded-lg border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-300 transition flex flex-col items-center gap-1">
+                                <i class="fa-regular fa-square text-xs"></i>
+                                <span class="scale-90">標準</span>
+                            </button>
+                            <button onclick="setDisplayMode('minimal')" id="dispBtn_minimal" class="py-2 px-1.5 rounded-lg border border-slate-850 bg-slate-900/60 text-slate-500 hover:text-slate-400 hover:bg-slate-900 transition flex flex-col items-center gap-1">
+                                <i class="fa-solid fa-compress text-xs"></i>
+                                <span class="scale-90">📁 極小(名前)</span>
+                            </button>
+                        </div>
+                        <p class="text-[9px] text-slate-500 mt-1 leading-tight">※「極小」にすると名前のみの省スペースになり、ツリー接続線や余白が縮小されて邪魔にならない位置に自動スリム配置されます。</p>
+                    </div>
+
+                    <!-- Name Input -->
+                    <div>
+                        <label class="block text-xs text-slate-400 font-medium mb-1">名前 <span class="text-rose-500">*</span></label>
+                        <input type="text" id="editName" class="w-full bg-slate-800 text-slate-100 border border-slate-700 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-brand-500">
+                    </div>
+
+                    <!-- Row: User ID & Referral Code -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs text-slate-400 font-medium mb-1">ユーザー ID</label>
+                            <input type="text" id="editUserId" class="w-full bg-slate-800 text-slate-100 border border-slate-700 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-brand-500 font-mono" placeholder="例: BT001">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-400 font-medium mb-1">紹介コード</label>
+                            <input type="text" id="editRefCode" class="w-full bg-slate-800 text-slate-100 border border-slate-700 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-brand-500 font-mono" placeholder="例: REF88">
+                        </div>
+                    </div>
+
+                    <!-- Row: Investment (運用額) & Group Investment (傘下合計額) -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs text-slate-400 font-medium mb-1">自己運用額 (USDT)</label>
+                            <input type="number" id="editInvestment" class="w-full bg-slate-800 text-slate-100 border border-slate-700 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-brand-500 font-mono" placeholder="例: 10000">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-400 font-medium mb-1">紹介傘下合計 (本人除く)</label>
+                            <div class="w-full bg-slate-850 text-emerald-400 border border-slate-800 rounded-lg px-3 py-1.5 text-sm font-mono font-bold flex items-center justify-between">
+                                <span id="displayGroupInvestment">$0</span>
+                                <i class="fa-solid fa-chart-line text-[10px] text-slate-500"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Rank Picker -->
+                    <div>
+                        <label class="block text-xs text-slate-400 font-medium mb-1">紹介ランク (V0 ～ V6)</label>
+                        <div class="grid grid-cols-4 gap-1.5">
+                            <button onclick="setEditRank('V0')" id="rankBtn_V0" class="rank-btn py-2 px-1 rounded text-xs border border-slate-700 bg-slate-800 text-slate-400">V0</button>
+                            <button onclick="setEditRank('V1')" id="rankBtn_V1" class="rank-btn py-2 px-1 rounded text-xs border border-amber-800 bg-amber-950/10 text-amber-500">V1</button>
+                            <button onclick="setEditRank('V2')" id="rankBtn_V2" class="rank-btn py-2 px-1 rounded text-xs border border-slate-500 bg-slate-800/80 text-slate-300">V2</button>
+                            <button onclick="setEditRank('V3')" id="rankBtn_V3" class="rank-btn py-2 px-1 rounded text-xs border border-yellow-600 bg-yellow-950/10 text-yellow-500">V3</button>
+                            <button onclick="setEditRank('V4')" id="rankBtn_V4" class="rank-btn py-2 px-1 rounded text-xs border border-cyan-600 bg-cyan-950/10 text-cyan-400">V4</button>
+                            <button onclick="setEditRank('V5')" id="rankBtn_V5" class="rank-btn py-2 px-1 rounded text-xs border border-emerald-600 bg-emerald-950/10 text-emerald-400">V5</button>
+                            <button onclick="setEditRank('V6')" id="rankBtn_V6" class="rank-btn py-2 px-1 rounded text-xs border border-fuchsia-600 bg-fuchsia-950/10 text-fuchsia-400 font-semibold shadow">V6</button>
+                        </div>
+                    </div>
+
+                    <!-- Memo Textarea -->
+                    <div>
+                        <label class="block text-xs text-slate-400 font-medium mb-1">紹介用メモ欄</label>
+                        <textarea id="editMemo" rows="3" class="w-full bg-slate-800 text-slate-100 border border-slate-700 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-brand-500" placeholder="新規参入日や獲得グループ情報など自由に入力..."></textarea>
+                    </div>
+
+                    <!-- AI Tool Buttons in Form -->
+                    <div class="pt-1.5">
+                        <button onclick="generateInviteTextWithAI()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-2 rounded-lg transition text-xs flex items-center justify-center gap-1.5 shadow border border-blue-500/20">
+                            <i class="fa-solid fa-paper-plane text-yellow-300 animate-bounce"></i>
+                            <span>✨ AI紹介用メッセージを生成</span>
+                        </button>
+                    </div>
+
+                    <!-- Save Updates Button -->
+                    <button onclick="saveActiveNode()" class="w-full bg-brand-600 hover:bg-brand-500 text-white font-medium py-2.5 rounded-lg transition text-sm shadow-md shadow-brand-900/40 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-floppy-disk"></i> 情報を更新する
+                    </button>
+
+                    <!-- Downline Hierarchy Controls -->
+                    <div class="pt-3 border-t border-slate-800 mt-4 space-y-2">
+                        <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">直属ライン操作</h3>
+                        
+                        <button onclick="addChildToSelected()" class="w-full bg-emerald-950/60 hover:bg-emerald-900/60 text-emerald-300 hover:text-emerald-200 border border-emerald-800/50 font-medium py-2 rounded-lg transition text-xs flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-user-plus"></i> この人の直下にメンバー追加
+                        </button>
+
+                        <button onclick="confirmDeleteSelected()" class="w-full bg-rose-950/50 hover:bg-rose-900/50 text-rose-300 hover:text-rose-200 border border-rose-900/40 font-medium py-2 rounded-lg transition text-xs flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-user-minus"></i> この人と傘下全体を削除
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECURITY / PASSWORD & API SETTINGS AREA -->
+            <div class="p-4 border-t border-slate-800 bg-slate-950/30 space-y-4">
+                <div>
+                    <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                        <i class="fa-solid fa-key text-cyan-400"></i> AI連携設定 (Gemini API)
+                    </h3>
+                    <div class="space-y-1.5">
+                        <input type="password" id="settingsApiKey" class="w-full bg-slate-800 text-slate-100 border border-slate-700 rounded px-2.5 py-1 text-xs focus:outline-none focus:border-brand-500 font-mono" placeholder="AIキーを入力 (AI編集・紹介文作成用)">
+                        <button onclick="saveApiKey()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 py-1 rounded text-[10px] font-semibold transition border border-slate-700">
+                            APIキーをブラウザに安全保存
+                        </button>
+                        <p class="text-[9px] text-slate-500 leading-tight">※キーは暗号化されずLocalStorageにのみ安全にローカル保存されます。</p>
+                    </div>
+                </div>
+
+                <div class="pt-2 border-t border-slate-800/60">
+                    <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                        <i class="fa-solid fa-user-shield text-rose-400"></i> セキュリティ設定
+                    </h3>
+                    <div class="space-y-2">
+                        <div>
+                            <label class="block text-[10px] text-slate-400 mb-1">現在のパスワード</label>
+                            <input type="password" id="settingsCurrentPwd" class="w-full bg-slate-800 text-slate-100 border border-slate-700 rounded px-2.5 py-1 text-xs focus:outline-none focus:border-brand-500 font-mono" placeholder="••••••••">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] text-slate-400 mb-1">新しいパスワード</label>
+                            <input type="password" id="settingsNewPwd" class="w-full bg-slate-800 text-slate-100 border border-slate-700 rounded px-2.5 py-1 text-xs focus:outline-none focus:border-brand-500 font-mono" placeholder="••••••••">
+                        </div>
+                        <button onclick="changePassword()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 py-1.5 rounded text-xs font-semibold transition border border-slate-700">
+                            パスワードを変更
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Dashboard / Rank Counters -->
+            <div class="p-4 bg-slate-950/40 border-t border-slate-800">
+                <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                    <i class="fa-solid fa-chart-pie text-brand-400"></i> グループ統計 (リアルタイム)
+                </h3>
+                
+                <!-- Global Network Capital Display -->
+                <div class="bg-gradient-to-r from-emerald-950/40 to-slate-900/40 border border-emerald-900/30 rounded-lg p-2.5 mb-3 flex justify-between items-center">
+                    <div>
+                        <span class="text-slate-400 text-[10px] block uppercase font-medium">組織総運用額</span>
+                        <span id="statTotalInvestment" class="text-xl font-extrabold text-emerald-400">$0</span>
+                    </div>
+                    <div class="bg-emerald-950/50 p-2 rounded-lg border border-emerald-800/40 text-emerald-400 text-sm">
+                        <i class="fa-solid fa-vault"></i>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 mb-3">
+                    <div class="bg-slate-800/40 border border-slate-800 rounded-lg p-2.5">
+                        <span class="text-slate-400 text-[10px] block uppercase">総グループ員数</span>
+                        <span id="statTotalUsers" class="text-lg font-bold text-white">0</span> <span class="text-xs text-slate-400">名</span>
+                    </div>
+                    <div class="bg-slate-800/40 border border-slate-800 rounded-lg p-2.5">
+                        <span class="text-slate-400 text-[10px] block uppercase">紹介階層の深さ</span>
+                        <span id="statMaxDepth" class="text-lg font-bold text-white">0</span> <span class="text-xs text-slate-400">層</span>
+                    </div>
+                </div>
+
+                <!-- Rank breakdown visual list -->
+                <div class="space-y-1.5 text-xs">
+                    <div class="flex items-center justify-between">
+                        <span class="text-slate-400">ランク分布</span>
+                        <span class="text-slate-500 text-[10px]">V0〜V6</span>
+                    </div>
+                    
+                    <div id="rankStatsBars" class="space-y-1">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Center Canvas: Interactive Tree Map Area -->
+        <section class="flex-1 flex flex-col overflow-hidden bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-900 via-[#0a0f1d] to-[#04060d]">
+            
+            <!-- Floating Canvas Controller Bar -->
+            <div class="absolute top-4 right-4 z-20 flex items-center gap-1 bg-slate-900/90 border border-slate-800 p-1 rounded-lg shadow-2xl backdrop-blur-md">
+                <button onclick="zoomCanvas(0.1)" class="w-8 h-8 flex items-center justify-center rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition" title="ズームイン">
+                    <i class="fa-solid fa-magnifying-glass-plus"></i>
+                </button>
+                <button onclick="zoomCanvas(-0.1)" class="w-8 h-8 flex items-center justify-center rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition" title="ズームアウト">
+                    <i class="fa-solid fa-magnifying-glass-minus"></i>
+                </button>
+                <button onclick="resetZoom()" class="w-8 h-8 flex items-center justify-center rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition" title="位置リセット">
+                    <i class="fa-solid fa-arrows-to-eye"></i>
+                </button>
+                <div class="w-[1px] h-6 bg-slate-800 mx-1"></div>
+                <!-- LAYOUT MODE TOGGLER -->
+                <button onclick="toggleCompactMode()" id="layoutToggleBtn" class="px-2.5 h-8 flex items-center justify-center gap-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition text-[11px]" title="表示モード切替（詳細 ⇔ コンパクト）">
+                    <i class="fa-solid fa-cubes"></i> <span id="layoutToggleText">詳細</span>
+                </button>
+                <div class="w-[1px] h-6 bg-slate-800 mx-1"></div>
+                <button onclick="collapseAllNodes()" class="w-8 h-8 flex items-center justify-center rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition" title="全ノードを閉じる">
+                    <i class="fa-solid fa-folder-minus"></i>
+                </button>
+                <button onclick="expandAllNodes()" class="w-8 h-8 flex items-center justify-center rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition" title="全ノードを展開">
+                    <i class="fa-solid fa-folder-plus"></i>
+                </button>
+            </div>
+
+            <!-- Dynamic Breadcrumb / Selected Person Tracker -->
+            <div class="absolute top-4 left-4 z-20 pointer-events-none max-w-[calc(100%-160px)]">
+                <div class="bg-slate-900/80 border border-slate-800 px-3 py-1.5 rounded-lg shadow-lg backdrop-blur-md text-[11px] text-slate-300 flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+                    <span class="truncate" id="canvasFocusName">全体を表示中</span>
+                </div>
+            </div>
+
+            <!-- Drag container & Touch Handler -->
+            <div id="canvasViewport" class="flex-1 overflow-auto canvas-area flex items-center justify-center p-12 select-none touch-none" 
+                 onmousedown="startPan(event)" onmousemove="panCanvas(event)" onmouseup="endPan()" onmouseleave="endPan()"
+                 ontouchstart="handleTouchStart(event)" ontouchmove="handleTouchMove(event)" ontouchend="handleTouchEnd(event)">
+                
+                <div id="treeContainer" class="tree origin-center transition-transform duration-75" style="transform: scale(1) translate(0px, 0px);">
+                    <!-- Dynamic Organizational Chart Rendered Here -->
+                </div>
+            </div>
+
+            <!-- Bottom help tip -->
+            <div class="bg-slate-900/60 border-t border-slate-800/80 px-4 md:px-6 py-2 text-[10px] text-slate-400 flex items-center justify-between shrink-0">
+                <span class="flex items-center gap-1.5">
+                    <i class="fa-solid fa-circle-info text-brand-400"></i>
+                    <span>PCはドラッグ＆ホイール、スマホはスワイプ＆ピンチで移動・拡大縮小が可能です。</span>
+                </span>
+                <span class="font-mono text-[9px] text-slate-500 hidden xs:inline">Bitrade X Web v2.5</span>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal Notifications / Confirmations -->
+    <div id="customModal" class="fixed inset-0 bg-slate-950/80 z-40 flex items-center justify-center p-4 hidden backdrop-blur-sm">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
+            <div class="flex items-center space-x-3 text-rose-400">
+                <div class="bg-rose-950/50 p-2.5 rounded-xl border border-rose-900/50">
+                    <i id="modalIcon" class="fa-solid fa-triangle-exclamation text-xl"></i>
+                </div>
+                <h4 id="modalTitle" class="text-base font-bold text-slate-100">警告タイトル</h4>
+            </div>
+            <p id="modalDescription" class="text-sm text-slate-300 leading-relaxed">
+                メッセージ内容がここに表示されます。
+            </p>
+            <div class="flex items-center justify-end gap-3 pt-2">
+                <button id="modalCancelBtn" onclick="closeModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-lg text-xs transition">
+                    キャンセル
+                </button>
+                <button id="modalConfirmBtn" class="bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 rounded-lg text-xs font-semibold shadow transition">
+                    実行する
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Output & Interaction Modal Overlay (Default template) -->
+    <div id="aiModal" class="fixed inset-0 bg-slate-950/85 z-40 flex items-center justify-center p-4 hidden backdrop-blur-md">
+        <div class="bg-slate-900 border border-purple-500/30 rounded-2xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl shadow-purple-950/50 overflow-hidden">
+            <!-- AI Header -->
+            <div class="bg-gradient-to-r from-indigo-950 via-purple-950 to-pink-950 px-6 py-4 border-b border-purple-900/30 flex items-center justify-between shrink-0">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-gradient-to-tr from-yellow-400 to-pink-500 p-2 rounded-xl text-slate-950 animate-pulse">
+                        <i class="fa-solid fa-wand-magic-sparkles text-lg"></i>
+                    </div>
+                    <div>
+                        <h4 id="aiModalTitle" class="text-base font-bold text-slate-100 flex items-center gap-1.5">
+                            AI分析中...
+                        </h4>
+                        <p class="text-[10px] text-purple-300">Powered by Gemini AI (Google)</p>
+                    </div>
+                </div>
+                <button onclick="closeAIModal()" class="text-slate-400 hover:text-white transition">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- AI Content Space -->
+            <div class="flex-1 overflow-y-auto p-6 space-y-4 text-sm text-slate-200 leading-relaxed" id="aiModalBody">
+                <!-- Loading Animation -->
+                <div id="aiLoading" class="flex flex-col items-center justify-center py-12 space-y-4">
+                    <div class="relative w-16 h-16">
+                        <div class="absolute inset-0 rounded-full border-4 border-purple-500/20 border-t-purple-500 animate-spin"></div>
+                        <div class="absolute inset-2 rounded-full border-4 border-pink-500/20 border-b-pink-500 animate-spin duration-1000"></div>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-sm font-semibold text-purple-300">分析データをGemini APIに送信し、診断を生成しています...</p>
+                        <p class="text-xs text-slate-500 mt-1">※この処理には数秒かかる場合があります。</p>
+                    </div>
+                </div>
+                
+                <!-- Display Result Panel -->
+                <div id="aiResultText" class="hidden whitespace-pre-wrap font-sans space-y-3">
+                    <!-- Loaded dynamically -->
+                </div>
+            </div>
+
+            <!-- Footer control tools -->
+            <div class="bg-slate-950/60 border-t border-slate-800/60 p-4 flex items-center justify-between shrink-0 gap-3">
+                <span class="text-[10px] text-slate-500">※生成結果は毎回最適なアプローチを構築するため変動します。</span>
+                <div class="flex items-center gap-2">
+                    <button id="aiCopyBtn" onclick="copyAIResult()" class="bg-purple-900/40 hover:bg-purple-900/60 border border-purple-700/40 text-purple-200 hover:text-white px-4 py-2 rounded-lg text-xs transition flex items-center gap-1.5">
+                        <i class="fa-regular fa-copy"></i> コピーする
+                    </button>
+                    <button onclick="closeAIModal()" class="bg-slate-850 hover:bg-slate-800 text-slate-300 border border-slate-700/60 px-4 py-2 rounded-lg text-xs transition">
+                        閉じる
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI CHAT ASSISTANT MODAL (DIRECT AI EDITING) -->
+    <div id="aronaModal" class="fixed inset-0 bg-slate-950/85 z-40 flex items-center justify-center p-4 hidden backdrop-blur-md">
+        <div class="bg-slate-900 border border-cyan-500/30 rounded-2xl w-full max-w-xl max-h-[85vh] flex flex-col shadow-2xl shadow-cyan-950/40 overflow-hidden">
+            <!-- AI Assistant Header -->
+            <div class="bg-gradient-to-r from-cyan-900 via-sky-950 to-blue-950 px-5 py-4 border-b border-cyan-800/30 flex items-center justify-between shrink-0">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-gradient-to-tr from-cyan-300 to-sky-500 p-2 rounded-xl text-slate-900 font-extrabold animate-pulse">
+                        <i class="fa-solid fa-robot text-lg"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-bold text-slate-100 flex items-center gap-1.5">
+                            AI自動編集アシスタント
+                        </h4>
+                        <p class="text-[10px] text-cyan-300 font-medium">言葉で組織図の追加・変更・削除が可能です</p>
+                    </div>
+                </div>
+                <button onclick="closeAronaModal()" class="text-slate-400 hover:text-white transition">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- AI Chat Body -->
+            <div class="flex-1 overflow-y-auto p-5 space-y-4" id="aronaChatBody">
+                
+                <!-- Business AI Intro Bubble -->
+                <div class="flex items-start gap-3">
+                    <div class="w-8 h-8 rounded-full bg-cyan-500/20 border border-cyan-400 flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-robot text-xs text-cyan-400"></i>
+                    </div>
+                    <div class="bg-slate-800 border border-slate-700 rounded-2xl rounded-tl-none p-3 max-w-[85%] text-xs text-slate-200 space-y-1.5">
+                        <p class="font-bold text-cyan-300">AIアシスタント</p>
+                        <p>管理者様、お疲れ様です。データ管理アシスタントとして組織図の作成・更新業務をお手伝いいたします。</p>
+                        <p class="text-slate-400">こちらに言葉で指示を入力いただくだけで、組織系列図のデータ（名前、ユーザーID、紹介コード、ランク、メモ、運用額、表示スタイルなど）を自動で追加、変更、削除してツリー全体をリアルタイムに更新いたします。</p>
+                        <p class="text-[10px] text-slate-500 bg-slate-950/40 p-2 rounded border border-slate-800/80 mt-1">
+                            💡指示の例：<br>
+                            ・「山田次郎さんの直下に、シロコさんをID BX-465、紹介コード SHIRO5、ランク V3、運用額 5000で追加してください」<br>
+                            ・「佐藤花子さんの自己運用額を 25000 に変更してください」<br>
+                            ・「高橋ケンさんを重要メンバー（ゴールド強調）に設定して」<br>
+                            ・「伊藤剛さんを極小表示（名前のみコンパクト）に変更して」
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Dynamically added messages go here -->
+
+            </div>
+
+            <!-- Loading Spinner inside AI Assistant Chat -->
+            <div id="aronaThinking" class="px-5 py-2 hidden">
+                <div class="flex items-center gap-2 text-xs text-cyan-400">
+                    <i class="fa-solid fa-spinner animate-spin"></i>
+                    <span>AIが系列指示を分析しデータを書き換えています...</span>
+                </div>
+            </div>
+
+            <!-- QUICK SUGGESTIONS TEMPLATE CHIPS -->
+            <div class="bg-slate-900 border-t border-slate-800 px-4 py-2 shrink-0 flex items-center gap-1.5 overflow-x-auto">
+                <span class="text-[9px] text-slate-500 whitespace-nowrap"><i class="fa-solid fa-keyboard"></i> 定型句:</span>
+                <button onclick="insertChatTemplate('add')" class="text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-0.5 rounded border border-slate-700 whitespace-nowrap flex items-center gap-1">
+                    <i class="fa-solid fa-user-plus text-emerald-400"></i> メンバー追加
+                </button>
+                <button onclick="insertChatTemplate('edit')" class="text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-0.5 rounded border border-slate-700 whitespace-nowrap flex items-center gap-1">
+                    <i class="fa-solid fa-pen text-amber-400"></i> 運用額の変更
+                </button>
+                <button onclick="insertChatTemplate('gold')" class="text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-0.5 rounded border border-slate-700 whitespace-nowrap flex items-center gap-1">
+                    <i class="fa-solid fa-star text-yellow-400"></i> 重要に指定
+                </button>
+                <button onclick="insertChatTemplate('minimal')" class="text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-0.5 rounded border border-slate-700 whitespace-nowrap flex items-center gap-1">
+                    <i class="fa-solid fa-compress text-cyan-400"></i> 極小（名前のみ）に
+                </button>
+                <button onclick="insertChatTemplate('delete')" class="text-[9px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-0.5 rounded border border-slate-700 whitespace-nowrap flex items-center gap-1">
+                    <i class="fa-solid fa-user-minus text-rose-400"></i> 削除
+                </button>
+            </div>
+
+            <!-- Chat input form -->
+            <div class="bg-slate-950/60 border-t border-slate-800/60 p-4 shrink-0 flex gap-2">
+                <input type="text" id="aronaMessageInput" onkeydown="handleAronaKeyDown(event)" placeholder="変更指示をご入力ください..." 
+                       class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-cyan-400">
+                <button onclick="sendToArona()" class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold px-4 rounded-xl transition text-xs flex items-center justify-center gap-1.5 active:scale-95">
+                    <span>送信</span>
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Default seed data representing Bitrade X network structure with investment & display configurations
+        const DEFAULT_TREE = {
+            id: "bx_root_001",
+            name: "ビートレード太郎",
+            userId: "BX-LDR-777",
+            refCode: "LEADER7",
+            rank: "V6",
+            investment: 50000,
+            displayMode: "gold", // "gold" = important, "normal" = standard, "minimal" = compact name only
+            memo: "Bitrade X 日本統括リーダー。グループ全体のファウンダー。",
+            collapsed: false,
+            children: [
+                {
+                    id: "bx_node_101",
+                    name: "山田 次郎",
+                    userId: "BX-99021",
+                    refCode: "YMD99",
+                    rank: "V5",
+                    investment: 25000,
+                    displayMode: "gold", // Important leader
+                    memo: "東京支店リーダー。拡大スピードトップレベル。",
+                    collapsed: false,
+                    children: [
+                        {
+                            id: "bx_node_201",
+                            name: "佐藤 花子",
+                            userId: "BX-22091",
+                            refCode: "STH88",
+                            rank: "V3",
+                            investment: 8000,
+                            displayMode: "normal",
+                            memo: "SNSでのマーケティング担当。女性グループ構築中。",
+                            collapsed: false,
+                            children: []
+                        },
+                        {
+                            id: "bx_node_202",
+                            name: "鈴木 一郎",
+                            userId: "BX-33012",
+                            refCode: "SZK12",
+                            rank: "V4",
+                            investment: 15000,
+                            displayMode: "normal",
+                            memo: "セミナー講師。投資家コミュニティ運営。",
+                            collapsed: false,
+                            children: [
+                                {
+                                    id: "bx_node_301",
+                                    name: "高橋 ケン",
+                                    userId: "BX-55410",
+                                    refCode: "KEN55",
+                                    rank: "V1",
+                                    investment: 3000,
+                                    displayMode: "minimal", // Compact sub-node (saves tree space!)
+                                    memo: "鈴木の直紹介。初心者育成枠。",
+                                    collapsed: false,
+                                    children: []
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    id: "bx_node_102",
+                    name: "田中 健太",
+                    userId: "BX-88129",
+                    refCode: "TNK88",
+                    rank: "V4",
+                    investment: 12000,
+                    displayMode: "normal",
+                    memo: "関西コアメンバー。実業家繋がり多し。",
+                    collapsed: false,
+                    children: [
+                        {
+                            id: "bx_node_203",
+                            name: "渡辺 絵美",
+                            userId: "BX-11822",
+                            refCode: "EMI11",
+                            rank: "V2",
+                            investment: 5000,
+                            displayMode: "minimal", // Compact sub-node
+                            memo: "Webデザイナー。コミュニティ広報。",
+                            collapsed: false,
+                            children: []
+                        },
+                        {
+                            id: "bx_node_204",
+                            name: "伊藤 剛",
+                            userId: "BX-44810",
+                            refCode: "ITO44",
+                            rank: "V0",
+                            investment: 1000,
+                            displayMode: "minimal", // Compact sub-node
+                            memo: "2026年新規紹介登録。これから育成。",
+                            collapsed: false,
+                            children: []
+                        }
+                    ]
+                }
+            ]
+        };
+
+        // Application State Variables
+        let orgTreeData = {};
+        let activeNodeId = null;
+        let searchQuery = "";
+        let zoomScale = 1;
+        let isDragging = false;
+        let startX, startY;
+        let translateX = 0, translateY = 0;
+        let searchMatches = new Set();
+        let isCompactMode = false; // Global layout display toggle flag
+        
+        // Touch events variables for mobile pinching & panning
+        let touchStartDist = 0;
+        let initialScale = 1;
+
+        // Helper to find a node by ID recursively in the tree
+        function findNodeById(root, id) {
+            if (!root) return null;
+            if (root.id === id) return root;
+            if (root.children) {
+                for (let child of root.children) {
+                    const found = findNodeById(child, id);
+                    if (found) return found;
+                }
+            }
+            return null;
+        }
+
+        // Helper to find the parent of a node recursively
+        function findParentNode(root, targetId) {
+            if (!root) return null;
+            if (root.children) {
+                for (let child of root.children) {
+                    if (child.id === targetId) return root;
+                    const found = findParentNode(child, targetId);
+                    if (found) return found;
+                }
+            }
+            return null;
+        }
+
+        // Initialize App on Window Load
+        window.onload = function() {
+            // First: enforce Password Protection Screen check
+            const isUnlocked = sessionStorage.getItem("bitrade_x_unlocked") === "true";
+            const gate = document.getElementById("passwordGate");
+            
+            if (isUnlocked) {
+                gate.classList.add("hidden");
+            } else {
+                gate.classList.remove("hidden");
+                document.getElementById("gatePasswordInput").focus();
+            }
+
+            // Load Gemini API Key
+            const savedApiKey = localStorage.getItem("bitrade_x_gemini_api_key");
+            if (savedApiKey) {
+                document.getElementById("settingsApiKey").value = savedApiKey;
+            }
+
+            // Load Data
+            const savedData = localStorage.getItem("bitrade_x_org_data");
+            if (savedData) {
+                try {
+                    orgTreeData = JSON.parse(savedData);
+                } catch(e) {
+                    orgTreeData = JSON.parse(JSON.stringify(DEFAULT_TREE));
+                }
+            } else {
+                orgTreeData = JSON.parse(JSON.stringify(DEFAULT_TREE));
+            }
+            
+            renderTree();
+            updateStatistics();
+            
+            // Adjust zoom dynamically to fit beautifully
+            setTimeout(() => {
+                resetZoom();
+            }, 300);
+        };
+
+        // Save Gemini API key
+        function saveApiKey() {
+            const key = document.getElementById("settingsApiKey").value.trim();
+            localStorage.setItem("bitrade_x_gemini_api_key", key);
+            alertBox("設定保存", "Gemini APIキーを安全に保存しました。", "success");
+        }
+
+        // Toggle layout compact mode
+        function toggleCompactMode() {
+            isCompactMode = !isCompactMode;
+            const btnText = document.getElementById("layoutToggleText");
+            if (isCompactMode) {
+                btnText.innerText = "コンパクト";
+                alertBox("レイアウト変更", "表示をコンパクトに切り替えました。", "success");
+            } else {
+                btnText.innerText = "詳細";
+                alertBox("レイアウト変更", "詳細表示モードに戻しました。", "success");
+            }
+            renderTree();
+        }
+
+        // Helper to map full structured tree data into simplified text outline
+        function serializeTreeOutline(node, depth = 0) {
+            if (!node) return "";
+            let indent = "  ".repeat(depth);
+            let detail = `${indent}- 【名前】: ${node.name} (ランク: ${node.rank}, ID: ${node.userId || '未設定'}, 紹介コード: ${node.refCode || 'なし'}, 自己運用額: ${node.investment !== undefined ? node.investment : 0}, 表示モード: ${node.displayMode || 'normal'})\n`;
+            if (node.memo) {
+                detail += `${indent}  【メモ】: ${node.memo}\n`;
+            }
+            if (node.children && node.children.length > 0) {
+                for (let child of node.children) {
+                    detail += serializeTreeOutline(child, depth + 1);
+                }
+            }
+            return detail;
+        }
+
+        // Recursive helper to calculate total investment of downstream tree (excluding self)
+        function sumSubtreeInvestment(node) {
+            let sum = 0;
+            if (node.children) {
+                for (let child of node.children) {
+                    sum += Number(child.investment || 0) + sumSubtreeInvestment(child);
+                }
+            }
+            return sum;
+        }
+
+        // Build Tree HTML representation recursively
+        function buildTreeHTML(node) {
+            const hasChildren = node.children && node.children.length > 0;
+            const isCollapsed = node.collapsed;
+            
+            // Rank styling properties
+            const rankConfigs = {
+                'V0': { color: 'border-slate-700 bg-slate-900 text-slate-300', icon: 'fa-user-tag text-slate-500' },
+                'V1': { color: 'border-amber-700 bg-amber-950/20 text-amber-500', icon: 'fa-user-tag text-amber-600' },
+                'V2': { color: 'border-slate-400 bg-slate-800/80 text-slate-300', icon: 'fa-user-tag text-slate-400' },
+                'V3': { color: 'border-yellow-500 bg-yellow-950/20 text-yellow-500', icon: 'fa-user-tag text-yellow-500' },
+                'V4': { color: 'border-cyan-500 bg-cyan-950/20 text-cyan-400', icon: 'fa-user-tag text-cyan-500' },
+                'V5': { color: 'border-emerald-500 bg-emerald-950/20 text-emerald-400', icon: 'fa-user-tag text-emerald-500' },
+                'V6': { color: 'border-fuchsia-500 bg-fuchsia-950/20 text-fuchsia-400 glow-v6', icon: 'fa-crown text-fuchsia-500' }
+            };
+
+            const rankStyle = rankConfigs[node.rank] || rankConfigs['V0'];
+            const isActive = node.id === activeNodeId ? 'node-active' : '';
+            
+            // Check if node is a search hit
+            const isMatch = searchMatches.has(node.id);
+            const matchHighlight = isMatch ? 'ring-4 ring-yellow-400 shadow-[0_0_25px_rgba(234,179,8,0.8)] border-yellow-400 scale-105 z-10' : '';
+
+            // Calculate live totals for children (excluding self)
+            const ownInvestment = Number(node.investment || 0);
+            const downstreamSum = sumSubtreeInvestment(node);
+
+            // Variable size depending on Compact Mode and displayMode
+            const dMode = node.displayMode || 'normal';
+
+            let cardHtml = '';
+
+            if (dMode === 'minimal') {
+                // MINIMAL MODE: Slim name-only badge to save space and display out of the way
+                cardHtml = `
+                    <div class="relative inline-block transition-all duration-300 mx-1">
+                        <div onclick="selectNode('${node.id}', event)" 
+                             class="cursor-pointer text-left w-24 md:w-28 rounded-lg border p-1.5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition duration-200 border-slate-800/80 bg-slate-900/90 text-slate-400 ${isActive} ${matchHighlight}"
+                             title="${escapeHTML(node.name)} (ID: ${node.userId || 'なし'})">
+                            <div class="flex items-center gap-1.5 min-w-0">
+                                <span class="text-[9px] font-mono font-bold text-slate-500 shrink-0" style="color: ${rankStyle.color.includes('text') ? '' : 'var(--tw-text-opacity)'}">${node.rank}</span>
+                                <div class="font-medium text-slate-300 truncate text-[10px] md:text-[11px] leading-tight flex-1">
+                                    ${escapeHTML(node.name)}
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Tiny Collapse Indicator if children exist -->
+                        ${hasChildren ? `
+                            <button onclick="toggleCollapse('${node.id}', event)" class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white border border-slate-700 rounded-full flex items-center justify-center shadow transition duration-200 z-10 focus:outline-none">
+                                <i class="fa-solid ${isCollapsed ? 'fa-angle-down text-[7px]' : 'fa-angle-up text-[7px]'}"></i>
+                            </button>
+                        ` : ''}
+                    </div>
+                `;
+            } else {
+                // STANDARD ("normal") / IMPORTANT ("gold") MODES
+                const cardWidth = isCompactMode ? 'w-36 md:w-40' : 'w-52 md:w-56';
+                const paddingClass = isCompactMode ? 'p-2' : 'p-3';
+                
+                // Highlight gold/important card
+                const borderClass = dMode === 'gold' 
+                    ? 'border-yellow-500/80 bg-slate-900 shadow-[0_0_12px_rgba(234,179,8,0.25)]' 
+                    : rankStyle.color;
+                const starIcon = dMode === 'gold' ? '<i class="fa-solid fa-star text-yellow-400 ml-1" title="重要メンバー"></i>' : '';
+
+                cardHtml = `
+                    <div class="relative inline-block transition-all duration-300">
+                        <div onclick="selectNode('${node.id}', event)" 
+                             class="cursor-pointer text-left ${cardWidth} rounded-xl border ${paddingClass} shadow-lg hover:shadow-2xl hover:-translate-y-1 transition duration-200 ${borderClass} ${isActive} ${matchHighlight}">
+                            
+                            <!-- Top header banner in Node -->
+                            <div class="flex justify-between items-center border-b border-slate-800/80 pb-1 mb-1.5 text-[9px] md:text-[10px]">
+                                <span class="font-bold flex items-center gap-0.5 md:gap-1">
+                                    <i class="fa-solid ${rankStyle.icon}"></i>
+                                    <span class="uppercase tracking-wider font-mono">${node.rank}</span>
+                                    ${starIcon}
+                                </span>
+                                <span class="font-mono text-slate-500 truncate max-w-[60px]">${node.userId || 'ID未設定'}</span>
+                            </div>
+                            
+                            <!-- Core Body Name -->
+                            <div class="font-bold text-slate-100 truncate text-xs md:text-sm" title="${escapeHTML(node.name)}">
+                                ${escapeHTML(node.name)}
+                            </div>
+                            
+                            <!-- Referral Code (Hidden in Compact mode) -->
+                            ${!isCompactMode ? `
+                                <div class="text-[10px] text-slate-400 mt-1 font-mono flex items-center gap-1">
+                                    <i class="fa-solid fa-qrcode text-slate-500"></i>
+                                    <span>紹介: ${escapeHTML(node.refCode) || 'なし'}</span>
+                                </div>
+                            ` : ''}
+
+                            <!-- Financial Metrics -->
+                            <div class="grid grid-cols-2 gap-1 mt-1.5 pt-1.5 border-t border-slate-800/40 text-[9px] font-mono">
+                                <div>
+                                    <span class="block text-[8px] text-slate-500 uppercase">自己運用</span>
+                                    <span class="font-semibold text-slate-300">$${ownInvestment.toLocaleString()}</span>
+                                </div>
+                                <div class="text-right">
+                                    <span class="block text-[8px] text-slate-500 uppercase">傘下合計</span>
+                                    <span class="font-semibold text-emerald-400">$${downstreamSum.toLocaleString()}</span>
+                                </div>
+                            </div>
+
+                            <!-- Brief Memo Indicator if exists (Hidden in Compact Mode) -->
+                            ${node.memo && !isCompactMode ? `
+                                <div class="mt-2 pt-1.5 border-t border-slate-800/40 flex items-center gap-1 text-[10px] text-slate-500 italic">
+                                    <i class="fa-regular fa-comment-dots text-[9px]"></i>
+                                    <span class="truncate max-w-[140px]">${escapeHTML(node.memo)}</span>
+                                </div>
+                            ` : ''}
+
+                            <!-- Downline toggle icon indicator -->
+                            ${hasChildren ? `
+                                <button onclick="toggleCollapse('${node.id}', event)" class="absolute -bottom-3 left-1/2 -translate-x-1/2 w-5 h-5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 rounded-full flex items-center justify-center shadow-lg transition duration-200 z-10 focus:outline-none">
+                                    <i class="fa-solid ${isCollapsed ? 'fa-angle-down text-[8px]' : 'fa-angle-up text-[8px]'}"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }
+
+            let childrenHtml = '';
+            if (hasChildren && !isCollapsed) {
+                childrenHtml = '<ul>';
+                for (let child of node.children) {
+                    // SLIM AUTO-PLACEMENT ALGORITHM: If child is minimal, reduce horizontal line span to place them closely
+                    const minimalSpacingClass = child.displayMode === 'minimal' ? 'px-1 md:px-1.5' : 'px-3 md:px-5';
+                    childrenHtml += `<li class="${minimalSpacingClass}">${buildTreeHTML(child)}</li>`;
+                }
+                childrenHtml += '</ul>';
+            }
+
+            return `
+                <div class="inline-block">
+                    ${cardHtml}
+                    ${childrenHtml}
+                </div>
+            `;
+        }
+
+        // Refresh entire visual container
+        function renderTree() {
+            const container = document.getElementById('treeContainer');
+            if (!orgTreeData || Object.keys(orgTreeData).length === 0) {
+                container.innerHTML = `
+                    <div class="text-center p-12 bg-slate-900/60 rounded-2xl border border-slate-800">
+                        <i class="fa-solid fa-users-slash text-4xl text-slate-600 mb-3 block"></i>
+                        <p class="text-slate-400 text-sm mb-4">組織図データが存在しません</p>
+                        <button onclick="resetToDemo()" class="bg-brand-600 hover:bg-brand-500 text-white font-medium py-2 px-4 rounded-lg text-xs transition">
+                            デモデータを読み込む
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+            container.innerHTML = `<ul><li>${buildTreeHTML(orgTreeData)}</li></ul>`;
+        }
+
+        // Click action to select node
+        function selectNode(id, event) {
+            if (event) event.stopPropagation();
+            
+            activeNodeId = id;
+            const node = findNodeById(orgTreeData, id);
+            
+            if (!node) return;
+
+            // Highlight in tree view
+            document.querySelectorAll('.node-active').forEach(el => el.classList.remove('node-active'));
+            renderTree();
+
+            // Setup Editor Sidebar
+            document.getElementById('editorPlaceholder').classList.add('hidden');
+            document.getElementById('editorContainer').classList.remove('hidden');
+            document.getElementById('selectedIndicator').innerText = node.userId || '選択中';
+            document.getElementById('canvasFocusName').innerText = `${node.name} (${node.rank})`;
+
+            // Fill Form inputs
+            document.getElementById('editName').value = node.name || '';
+            document.getElementById('editUserId').value = node.userId || '';
+            document.getElementById('editRefCode').value = node.refCode || '';
+            document.getElementById('editMemo').value = node.memo || '';
+            document.getElementById('editInvestment').value = node.investment !== undefined ? node.investment : 0;
+            
+            // Calculate and bind downstream group sum (excluding target itself)
+            const downstreamSum = sumSubtreeInvestment(node);
+            document.getElementById('displayGroupInvestment').innerText = `$${downstreamSum.toLocaleString()}`;
+            
+            setEditRank(node.rank || 'V0');
+            setDisplayModeUI(node.displayMode || 'normal');
+
+            // On mobile, automatically close sidebar after choosing to see node on canvas
+            if (window.innerWidth < 1024 && event) {
+                toggleSidebar();
+            }
+        }
+
+        // Quick edit root (Top leader)
+        function editTopLeader() {
+            if (orgTreeData && orgTreeData.id) {
+                selectNode(orgTreeData.id);
+                // Highlight & focus viewport onto root node
+                translateX = 0;
+                translateY = 50; // slightly down
+                zoomScale = 1;
+                applyTransform();
+                
+                // Keep sidebar open on mobile so they can edit directly
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('sidebarOverlay');
+                if (window.innerWidth < 1024) {
+                    sidebar.classList.add('open');
+                    overlay.classList.remove('hidden');
+                }
+            }
+        }
+
+        // Set visual state for rank buttons inside editor
+        function setEditRank(rank) {
+            // Remove active style from all rank buttons
+            document.querySelectorAll('.rank-btn').forEach(btn => {
+                btn.classList.remove('ring-2', 'ring-brand-500', 'ring-offset-1', 'scale-105', 'font-bold');
+            });
+            
+            // Set active state to the clicked rank button
+            const activeBtn = document.getElementById(`rankBtn_${rank}`);
+            if (activeBtn) {
+                activeBtn.classList.add('ring-2', 'ring-brand-500', 'ring-offset-1', 'scale-105', 'font-bold');
+            }
+            
+            // Internal tag tracker
+            document.getElementById('editorContainer').dataset.activeRank = rank;
+        }
+
+        // Set UI visual state for display Mode (gold / normal / minimal)
+        function setDisplayModeUI(mode) {
+            document.querySelectorAll('[id^="dispBtn_"]').forEach(btn => {
+                btn.classList.remove('ring-2', 'ring-brand-500', 'scale-105', 'font-bold');
+                btn.classList.add('opacity-70');
+            });
+
+            const activeBtn = document.getElementById(`dispBtn_${mode}`);
+            if (activeBtn) {
+                activeBtn.classList.add('ring-2', 'ring-brand-500', 'scale-105', 'font-bold');
+                activeBtn.classList.remove('opacity-70');
+            }
+            document.getElementById('editorContainer').dataset.activeDisplayMode = mode;
+        }
+
+        // Set selected node display mode
+        function setDisplayMode(mode) {
+            setDisplayModeUI(mode);
+            if (activeNodeId) {
+                const node = findNodeById(orgTreeData, activeNodeId);
+                if (node) {
+                    node.displayMode = mode;
+                    saveToStorage();
+                    renderTree();
+                }
+            }
+        }
+
+        // Save current changes in Editor back to node
+        function saveActiveNode() {
+            if (!activeNodeId) return;
+            
+            const node = findNodeById(orgTreeData, activeNodeId);
+            if (!node) return;
+
+            const newName = document.getElementById('editName').value.trim();
+            if (!newName) {
+                alertBox("検証エラー", "名前を入力してください。", "error");
+                return;
+            }
+
+            // Apply fields
+            node.name = newName;
+            node.userId = document.getElementById('editUserId').value.trim();
+            node.refCode = document.getElementById('editRefCode').value.trim();
+            node.memo = document.getElementById('editMemo').value.trim();
+            node.rank = document.getElementById('editorContainer').dataset.activeRank || 'V0';
+            node.investment = Number(document.getElementById('editInvestment').value) || 0;
+            node.displayMode = document.getElementById('editorContainer').dataset.activeDisplayMode || 'normal';
+
+            saveToStorage();
+            renderTree();
+            
+            // Update breadcrumbs and parent financial counters
+            document.getElementById('canvasFocusName').innerText = `${node.name} (${node.rank})`;
+            const downstreamSum = sumSubtreeInvestment(node);
+            document.getElementById('displayGroupInvestment').innerText = `$${downstreamSum.toLocaleString()}`;
+
+            alertBox("更新完了", `${node.name} の情報を正常に更新しました。`, "success");
+        }
+
+        // Add a child node underneath the currently selected node
+        function addChildToSelected() {
+            if (!activeNodeId) return;
+
+            const parentNode = findNodeById(orgTreeData, activeNodeId);
+            if (!parentNode) return;
+
+            // Generate temporary unique ID
+            const newId = "bx_node_" + Date.now();
+            const childIndex = (parentNode.children ? parentNode.children.length : 0) + 1;
+
+            const newChild = {
+                id: newId,
+                name: `${parentNode.name}の紹介メンバー${childIndex}`,
+                userId: "BX-" + Math.floor(10000 + Math.random() * 90000),
+                refCode: "REF" + Math.floor(100 + Math.random() * 900),
+                rank: "V0",
+                investment: 0,
+                displayMode: "normal", // Default standard
+                memo: "",
+                collapsed: false,
+                children: []
+            };
+
+            if (!parentNode.children) {
+                parentNode.children = [];
+            }
+            parentNode.children.push(newChild);
+
+            // Make parent expanded so children are visible immediately
+            parentNode.collapsed = false;
+
+            saveToStorage();
+            renderTree();
+            
+            // Automatically select the newly created child
+            selectNode(newId);
+            alertBox("追加完了", "直下に紹介メンバーを追加しました。表示優先度や基本設定を変更して更新してください。", "success");
+        }
+
+        // Delete confirmation
+        function confirmDeleteSelected() {
+            if (!activeNodeId) return;
+            
+            if (activeNodeId === orgTreeData.id) {
+                alertBox("削除不可", "統括リーダー（最上部のルート）を削除することはできません。", "error");
+                return;
+            }
+
+            const node = findNodeById(orgTreeData, activeNodeId);
+            if (!node) return;
+
+            const downlineCount = countSubtree(node) - 1;
+            let msg = `本当に「${node.name}」を削除しますか？`;
+            if (downlineCount > 0) {
+                msg += `<br><span class="text-rose-400 font-bold">【警告】直下の紹介メンバー ${downlineCount} 名もすべて同時に削除されます。</span>`;
+            }
+
+            showModal("メンバーの削除確認", msg, function() {
+                const parent = findParentNode(orgTreeData, activeNodeId);
+                if (parent) {
+                    parent.children = parent.children.filter(c => c.id !== activeNodeId);
+                    activeNodeId = null;
+                    
+                    // Reset Editor UI
+                    document.getElementById('editorPlaceholder').classList.remove('hidden');
+                    document.getElementById('editorContainer').classList.add('hidden');
+                    document.getElementById('selectedIndicator').innerText = "未選択";
+                    document.getElementById('canvasFocusName').innerText = "全体を表示中";
+                    
+                    saveToStorage();
+                    renderTree();
+                    closeModal();
+                    alertBox("削除完了", "対象のメンバーと傘下の系列情報を削除しました。", "success");
+                }
+            });
+        }
+
+        // Count members in a node subtree recursively
+        function countSubtree(node) {
+            let count = 1;
+            if (node.children) {
+                for (let child of node.children) {
+                    count += countSubtree(child);
+                }
+            }
+            return count;
+        }
+
+        // Toggle individual downline collapse status
+        function toggleCollapse(id, event) {
+            if (event) event.stopPropagation();
+            const node = findNodeById(orgTreeData, id);
+            if (node) {
+                node.collapsed = !node.collapsed;
+                renderTree();
+                saveToStorage();
+            }
+        }
+
+        // Collapse All nodes under root
+        function collapseAllNodes() {
+            function recurseCollapse(node) {
+                if (node.children && node.children.length > 0) {
+                    node.collapsed = true;
+                    node.children.forEach(recurseCollapse);
+                }
+            }
+            recurseCollapse(orgTreeData);
+            renderTree();
+            saveToStorage();
+            alertBox("ツリー操作", "すべての下位構造を折りたたました。", "success");
+        }
+
+        // Expand All nodes
+        function expandAllNodes() {
+            function recurseExpand(node) {
+                if (node.children && node.children.length > 0) {
+                    node.collapsed = false;
+                    node.children.forEach(recurseExpand);
+                }
+            }
+            recurseExpand(orgTreeData);
+            renderTree();
+            saveToStorage();
+            alertBox("ツリー操作", "すべての構造を展開しました。", "success");
+        }
+
+        // Search & auto expand path to matching nodes
+        function handleSearch() {
+            const val = document.getElementById('searchInput').value.trim().toLowerCase();
+            searchQuery = val;
+            
+            const clearBtn = document.getElementById('clearSearchBtn');
+            const resultCounter = document.getElementById('searchResultsCount');
+            
+            if (val === "") {
+                clearBtn.classList.add('hidden');
+                resultCounter.classList.add('hidden');
+                searchMatches.clear();
+                renderTree();
+                return;
+            }
+
+            clearBtn.classList.remove('hidden');
+            searchMatches.clear();
+
+            // Store paths to matches
+            let matchesFound = 0;
+
+            function searchRecurse(node, path) {
+                const nameMatch = node.name && node.name.toLowerCase().includes(val);
+                const idMatch = node.userId && node.userId.toLowerCase().includes(val);
+                const refMatch = node.refCode && node.refCode.toLowerCase().includes(val);
+
+                const isMatch = nameMatch || idMatch || refMatch;
+
+                if (isMatch) {
+                    searchMatches.add(node.id);
+                    matchesFound++;
+                    
+                    // Automatically expand all parents on match path
+                    path.forEach(parent => {
+                        parent.collapsed = false;
+                    });
+                }
+
+                if (node.children) {
+                    const nextPath = [...path, node];
+                    for (let child of node.children) {
+                        searchRecurse(child, nextPath);
+                    }
+                }
+            }
+
+            searchRecurse(orgTreeData, []);
+
+            // Show match numbers
+            resultCounter.classList.remove('hidden');
+            resultCounter.innerText = `検索結果: ${matchesFound} 件`;
+
+            renderTree();
+
+            // Automatically pan viewport to center the first match found
+            if (searchMatches.size > 0) {
+                const firstMatchId = Array.from(searchMatches)[0];
+                selectNode(firstMatchId);
+            }
+        }
+
+        // Reset search field
+        function clearSearch() {
+            document.getElementById('searchInput').value = "";
+            handleSearch();
+        }
+
+        // Zoom and Scale Control
+        function zoomCanvas(amount) {
+            zoomScale += amount;
+            // Bound zoom scale limits
+            if (zoomScale < 0.2) zoomScale = 0.2;
+            if (zoomScale > 3) zoomScale = 3;
+            applyTransform();
+        }
+
+        // Auto-scale to fit beautiful layouts on load
+        function resetZoom() {
+            zoomScale = window.innerWidth < 768 ? 0.75 : 1; 
+            translateX = 0;
+            translateY = window.innerWidth < 768 ? 40 : 0;
+            applyTransform();
+        }
+
+        function applyTransform() {
+            const el = document.getElementById('treeContainer');
+            if (el) {
+                el.style.transform = `scale(${zoomScale}) translate(${translateX}px, ${translateY}px)`;
+            }
+        }
+
+        // Drag/Pan handlers (Mouse)
+        function startPan(e) {
+            if (e.button !== 0) return;
+            isDragging = true;
+            startX = e.clientX - translateX;
+            startY = e.clientY - translateY;
+            document.getElementById('canvasViewport').style.cursor = "grabbing";
+        }
+
+        function panCanvas(e) {
+            if (!isDragging) return;
+            translateX = e.clientX - startX;
+            translateY = e.clientY - startY;
+            applyTransform();
+        }
+
+        // Stop Dragging
+        function endPan() {
+            isDragging = false;
+            const view = document.getElementById('canvasViewport');
+            if (view) view.style.cursor = "grab";
+        }
+
+        // Touch Interaction Support for Mobile Gestures
+        function handleTouchStart(e) {
+            if (e.touches.length === 1) {
+                isDragging = true;
+                startX = e.touches[0].clientX - translateX;
+                startY = e.touches[0].clientY - translateY;
+            } else if (e.touches.length === 2) {
+                isDragging = false;
+                touchStartDist = getTouchDistance(e);
+                initialScale = zoomScale;
+            }
+        }
+
+        function handleTouchMove(e) {
+            if (isDragging && e.touches.length === 1) {
+                translateX = e.touches[0].clientX - startX;
+                translateY = e.touches[0].clientY - startY;
+                applyTransform();
+            } else if (e.touches.length === 2) {
+                const dist = getTouchDistance(e);
+                if (dist > 10) {
+                    const factor = dist / touchStartDist;
+                    zoomScale = Math.min(Math.max(initialScale * factor, 0.25), 2.5);
+                    applyTransform();
+                }
+            }
+        }
+
+        function handleTouchEnd(e) {
+            isDragging = false;
+        }
+
+        function getTouchDistance(e) {
+            return Math.hypot(
+                e.touches[0].clientX - e.touches[1].clientX,
+                e.touches[0].clientY - e.touches[1].clientY
+            );
+        }
+
+        // Mobile drawer panel toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            if (sidebar.classList.contains('open')) {
+                sidebar.classList.remove('open');
+                overlay.classList.add('hidden');
+            } else {
+                sidebar.classList.add('open');
+                overlay.classList.remove('hidden');
+            }
+        }
+
+        // Mouse Wheel zoom controller
+        document.getElementById('canvasViewport').addEventListener('wheel', function(e) {
+            e.preventDefault();
+            const factor = e.deltaY < 0 ? 0.05 : -0.05;
+            zoomCanvas(factor);
+        }, { passive: false });
+
+        // Export organizational structured node JSON
+        function exportJSON() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(orgTreeData, null, 2));
+            const dlAnchorElem = document.createElement('a');
+            dlAnchorElem.setAttribute("href", dataStr);
+            dlAnchorElem.setAttribute("download", `BitradeX-Org-${new Date().toISOString().slice(0,10)}.json`);
+            dlAnchorElem.click();
+            alertBox("書き出し成功", "バックアップJSONファイルのダウンロードを開始しました。", "success");
+        }
+
+        // Custom validation schema for uploaded trees to guard against structural failure
+        function validateTreeStructure(node) {
+            if (!node || typeof node !== "object") return false;
+            if (!node.id || typeof node.name !== "string") return false;
+            
+            // Check display mode fallback
+            if (!node.displayMode) node.displayMode = "normal";
+            
+            // Check essential rank configuration
+            if (!node.rank) node.rank = "V0";
+            if (node.investment === undefined) node.investment = 0;
+            node.investment = Number(node.investment);
+
+            // Recursively validate children list
+            if (node.children) {
+                if (!Array.isArray(node.children)) {
+                    node.children = [];
+                }
+                for (let child of node.children) {
+                    const valid = validateTreeStructure(child);
+                    if (!valid) return false;
+                }
+            } else {
+                node.children = [];
+            }
+            return true;
+        }
+
+        // Import organizational JSON structure back in
+        function importJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    const isValid = validateTreeStructure(parsed);
+                    if (isValid) {
+                        orgTreeData = parsed;
+                        saveToStorage();
+                        renderTree();
+                        alertBox("インポート成功", "組織図データを正常に検証し、上書き復元しました。", "success");
+                    } else {
+                        alertBox("検証エラー", "無効な組織ツリー構造です。データが破損している可能性があります。", "error");
+                    }
+                } catch(err) {
+                    alertBox("パース失敗", "JSONファイルのパース中に致命的エラーが検出されました。", "error");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Restore structure to initial default demo
+        function resetToDemo() {
+            showModal("デモへのリセット確認", "すべての編集内容をリセットし、デモ用のサンプル系列に戻します。よろしいですか？", function() {
+                orgTreeData = JSON.parse(JSON.stringify(DEFAULT_TREE));
+                activeNodeId = null;
+                document.getElementById('editorPlaceholder').classList.remove('hidden');
+                document.getElementById('editorContainer').classList.add('hidden');
+                document.getElementById('selectedIndicator').innerText = "未選択";
+                document.getElementById('canvasFocusName').innerText = "全体を表示中";
+                
+                saveToStorage();
+                renderTree();
+                closeModal();
+                alertBox("初期化完了", "デモデータに初期化しました。", "success");
+            });
+        }
+
+        // Calculate statistical counts and global investment metrics
+        function updateStatistics() {
+            let total = 0;
+            let maxDepth = 0;
+            let totalInvestment = 0;
+            const rankCounts = { 'V0': 0, 'V1': 0, 'V2': 0, 'V3': 0, 'V4': 0, 'V5': 0, 'V6': 0 };
+
+            function traverse(node, currentDepth) {
+                if (!node) return;
+                total++;
+                totalInvestment += Number(node.investment || 0);
+
+                if (currentDepth > maxDepth) maxDepth = currentDepth;
+                
+                if (rankCounts.hasOwnProperty(node.rank)) {
+                    rankCounts[node.rank]++;
+                } else {
+                    rankCounts['V0']++;
+                }
+
+                if (node.children) {
+                    for (let child of node.children) {
+                        traverse(child, currentDepth + 1);
+                    }
+                }
+            }
+
+            traverse(orgTreeData, 1);
+
+            // Bind values
+            document.getElementById('statTotalUsers').innerText = total;
+            document.getElementById('statMaxDepth').innerText = maxDepth;
+            document.getElementById('statTotalInvestment').innerText = `$${totalInvestment.toLocaleString()}`;
+
+            const rankColors = {
+                'V0': 'bg-slate-500', 'V1': 'bg-amber-600', 'V2': 'bg-slate-400',
+                'V3': 'bg-yellow-500', 'V4': 'bg-cyan-500', 'V5': 'bg-emerald-500', 'V6': 'bg-fuchsia-500'
+            };
+
+            let barsHtml = '';
+            for (let i = 6; i >= 0; i--) {
+                const rankName = `V${i}`;
+                const count = rankCounts[rankName];
+                const percentage = total > 0 ? (count / total) * 100 : 0;
+                
+                barsHtml += `
+                    <div class="space-y-0.5">
+                        <div class="flex justify-between items-center text-[10px]">
+                            <span class="font-bold flex items-center gap-1">
+                                <span class="w-2 h-2 rounded-full ${rankColors[rankName]} inline-block"></span>
+                                <span class="text-slate-300 font-mono">${rankName}</span>
+                            </span>
+                            <span class="text-slate-400 font-mono">${count}人 (${Math.round(percentage)}%)</span>
+                        </div>
+                        <div class="w-full bg-slate-800/80 rounded-full h-1.5 overflow-hidden">
+                            <div class="${rankColors[rankName]} h-1.5 rounded-full" style="width: ${percentage}%"></div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            document.getElementById('rankStatsBars').innerHTML = barsHtml;
+        }
+
+        // Password & login protection
+        function checkPassword() {
+            const input = document.getElementById("gatePasswordInput").value;
+            const savedPwd = localStorage.getItem("bitrade_x_password") || "bitradex777";
+            const errorMsg = document.getElementById("gateErrorMsg");
+
+            if (input === savedPwd) {
+                sessionStorage.setItem("bitrade_x_unlocked", "true");
+                document.getElementById("passwordGate").classList.add("hidden");
+                errorMsg.classList.add("hidden");
+                alertBox("セキュリティ解除", "ログインに成功しました。ようこそ、管理者様！", "success");
+            } else {
+                errorMsg.classList.remove("hidden");
+                document.getElementById("gatePasswordInput").value = "";
+                document.getElementById("gatePasswordInput").focus();
+            }
+        }
+
+        function handleGateKeyDown(e) {
+            if (e.key === "Enter") {
+                checkPassword();
+            }
+        }
+
+        function lockApp() {
+            sessionStorage.removeItem("bitrade_x_unlocked");
+            document.getElementById("gatePasswordInput").value = "";
+            document.getElementById("passwordGate").classList.remove("hidden");
+            document.getElementById("gateErrorMsg").classList.add("hidden");
+            document.getElementById("gatePasswordInput").focus();
+            alertBox("ロック完了", "画面を安全にロックしました。", "success");
+        }
+
+        function changePassword() {
+            const currentPwd = document.getElementById("settingsCurrentPwd").value;
+            const newPwd = document.getElementById("settingsNewPwd").value.trim();
+            const actualCurrent = localStorage.getItem("bitrade_x_password") || "bitradex777";
+
+            if (!newPwd) {
+                alertBox("設定エラー", "新しいパスワードを入力してください。", "error");
+                return;
+            }
+
+            if (currentPwd !== actualCurrent) {
+                alertBox("設定エラー", "現在のパスワードが一致しません。", "error");
+                return;
+            }
+
+            localStorage.setItem("bitrade_x_password", newPwd);
+            document.getElementById("settingsCurrentPwd").value = "";
+            document.getElementById("settingsNewPwd").value = "";
+            alertBox("パスワード更新", "ログインパスワードを変更しました。次回起動時から有効です！", "success");
+        }
+
+        // Custom interactive dialog popup model
+        function showModal(title, text, confirmCallback) {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalDescription').innerHTML = text;
+            
+            const confirmBtn = document.getElementById('modalConfirmBtn');
+            const newConfirmBtn = confirmBtn.cloneNode(true);
+            confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+            
+            newConfirmBtn.addEventListener('click', confirmCallback);
+            
+            document.getElementById('customModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('customModal').classList.add('hidden');
+        }
+
+        // Toast Messages
+        function alertBox(title, message, type = "success") {
+            const toast = document.createElement('div');
+            toast.className = `fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3.5 rounded-xl shadow-2xl transition duration-500 transform translate-y-20 opacity-0 border max-w-sm pointer-events-auto`;
+            
+            if (type === "success") {
+                toast.classList.add('bg-slate-900', 'border-emerald-800', 'text-slate-100');
+                toast.innerHTML = `
+                    <div class="bg-emerald-950/80 p-1.5 rounded-lg text-emerald-400">
+                        <i class="fa-solid fa-circle-check text-base"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-bold">${escapeHTML(title)}</h4>
+                        <p class="text-[10px] text-slate-400 mt-0.5">${escapeHTML(message)}</p>
+                    </div>
+                `;
+            } else {
+                toast.classList.add('bg-slate-900', 'border-rose-800', 'text-slate-100');
+                toast.innerHTML = `
+                    <div class="bg-rose-950/80 p-1.5 rounded-lg text-rose-400">
+                        <i class="fa-solid fa-circle-exclamation text-base"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-bold">${escapeHTML(title)}</h4>
+                        <p class="text-[10px] text-slate-400 mt-0.5">${escapeHTML(message)}</p>
+                    </div>
+                `;
+            }
+
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.remove('translate-y-20', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+                setTimeout(() => {
+                    toast.remove();
+                }, 500);
+            }, 3500);
+        }
+
+        // Prevent XSS vulnerability injection in HTML structures
+        function escapeHTML(str) {
+            if (!str) return '';
+            return str.replace(/[&<>'"]/g, 
+                tag => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                }[tag] || tag)
+            );
+        }
+
+        /* --------------------------------------------------
+           GEMINI API CORE INTEGRATION (RETRY & EXPONENTIAL BACKOFF)
+           -------------------------------------------------- */
+        
+        // Unified caller for Gemini API utilizing recommended prompt configurations
+        async function fetchGeminiAPI(userPrompt, systemInstruction = "") {
+            const apiKey = localStorage.getItem("bitrade_x_gemini_api_key") || "";
+            if (!apiKey) {
+                throw new Error("Gemini APIキーが設定されていません。サイドバー下部の「API連携設定」よりキーを安全に保存してからお試しください。");
+            }
+
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            
+            const payload = {
+                contents: [{ parts: [{ text: userPrompt }] }]
+            };
+            
+            if (systemInstruction) {
+                payload.systemInstruction = {
+                    parts: [{ text: systemInstruction }]
+                };
+            }
+
+            // Exponential backoff configuration (Retry up to 5 times)
+            let retryDelay = 1000; // start with 1 second delay
+            const maxRetries = 5;
+
+            for (let attempt = 1; attempt <= maxRetries; attempt++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        const generatedText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                        if (generatedText) {
+                            return generatedText;
+                        }
+                    }
+                } catch (error) {
+                    // Failures fall through to retry blocks
+                }
+
+                if (attempt < maxRetries) {
+                    await new Promise(resolve => setTimeout(resolve, retryDelay));
+                    retryDelay *= 2; // Double delay: 1s -> 2s -> 4s -> 8s -> 16s
+                }
+            }
+
+            throw new Error("Gemini APIへのリクエストを規定回数（5回）試行しましたが接続できませんでした。キーが正しいか、またはネットワーク状況をご確認ください。");
+        }
+
+        // Open AI Dialog Box
+        function openAIModal(title) {
+            document.getElementById('aiModalTitle').innerText = title;
+            document.getElementById('aiLoading').classList.remove('hidden');
+            document.getElementById('aiResultText').classList.add('hidden');
+            document.getElementById('aiModal').classList.remove('hidden');
+        }
+
+        function closeAIModal() {
+            document.getElementById('aiModal').classList.add('hidden');
+        }
+
+        // Copy AI output buffer to Clipboard
+        function copyAIResult() {
+            const resultText = document.getElementById('aiResultText').innerText;
+            if (!resultText) return;
+
+            const tempTextArea = document.createElement("textarea");
+            tempTextArea.value = resultText;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    alertBox("コピー成功", "メッセージをクリップボードにコピーしました！", "success");
+                } else {
+                    alertBox("コピー失敗", "自動コピーに失敗しました。直接選択してコピーしてください。", "error");
+                }
+            } catch (err) {
+                alertBox("コピー失敗", "ブラウザによる制限のためコピーに失敗しました。", "error");
+            }
+            
+            document.body.removeChild(tempTextArea);
+        }
+
+        function saveToStorage() {
+            localStorage.setItem("bitrade_x_org_data", JSON.stringify(orgTreeData));
+            updateStatistics();
+        }
+
+        /* --------------------------------------------------
+           FEATURE: PERSONALIZE ATTRACTIVE INVITE MESSAGES (紹介メッセージ作成)
+           -------------------------------------------------- */
+        async function generateInviteTextWithAI() {
+            if (!activeNodeId) {
+                alertBox("メンバー未選択", "まずツリーから招待メッセージを作成したいメンバーを選択してください。", "error");
+                return;
+            }
+
+            const node = findNodeById(orgTreeData, activeNodeId);
+            if (!node) return;
+
+            openAIModal(`✨ AI紹介メッセージ生成 - ${node.name} 専用`);
+
+            const systemPrompt = `あなたはWEB3系ビジネス・コミュニティ（Bitrade X）での集客をサポートする優秀なAIライティングアシスタントです。
+特定のメンバーの情報に基づき、その人が知人や新規候補者に対してSNSやLINEを通じて魅力を伝え、自身の紹介系列に登録（紹介コードの使用）を促すための「心惹かれるカジュアルかつ丁寧なアプローチメッセージ」を執筆してください。
+以下の特徴・ルールを遵守してください。
+- メッセージは送る相手に合わせて「LINE（短め・フレンドリー）」「X・旧Twitter（140字以内）」「長めメール・メッセージ」の計3パターンを用意すること。
+- 対象者の「紹介コード: ${node.refCode || '（無し）'}` + (node.userId ? `、ID: ${node.userId}` : '') + `」を文章内に自然に織り交ぜること。
+- 対象メンバーの【メモ情報、ランク情報、自己運用実績】を盛り込み、説得力を持たせること。（実績投資額：$${(node.investment || 0).toLocaleString()} を活かし、運用実績を安全に魅力として伝える）
+回答は美しく装飾されたMarkdownテキストで構築し、リーダーがすぐにコピペで使える状態にしてください。`;
+
+            const userPrompt = `以下のBitrade Xメンバーの情報を基に、アプローチ用の招待文テンプレートを生成してください。
+
+■ メンバー情報
+- お名前: ${node.name}
+- 現在のランク: ${node.rank} (V0〜V6の内)
+- 紹介コード: ${node.refCode || '未登録'}
+- ユーザーID: ${node.userId || '未登録'}
+- 自己運用額: $${(node.investment || 0).toLocaleString()}
+- 登録されているメモ情報: ${node.memo || 'なし'}
+
+上記の情報から、本人の人柄や強みを活かした最高のメッセージをお願いします。`;
+
+            try {
+                const aiInviteTemplate = await fetchGeminiAPI(userPrompt, systemPrompt);
+                
+                // Format results
+                const formattedHtml = formatMarkdownForOutput(aiInviteTemplate);
+                document.getElementById('aiLoading').classList.add('hidden');
+                
+                const resultTextEl = document.getElementById('aiResultText');
+                resultTextEl.innerHTML = formattedHtml;
+                resultTextEl.classList.remove('hidden');
+            } catch (error) {
+                document.getElementById('aiLoading').classList.add('hidden');
+                const resultTextEl = document.getElementById('aiResultText');
+                resultTextEl.innerHTML = `
+                    <div class="p-4 border border-rose-800 bg-rose-950/20 text-rose-300 rounded-xl space-y-2">
+                        <p class="font-bold"><i class="fa-solid fa-circle-exclamation"></i> 生成中にエラーが発生しました</p>
+                        <p class="text-xs text-rose-400">${error.message}</p>
+                    </div>
+                `;
+                resultTextEl.classList.remove('hidden');
+            }
+        }
+
+        // Minimalist Markdown converter to avoid heavy formatting libraries
+        function formatMarkdownForOutput(mdText) {
+            if (!mdText) return "";
+            let html = mdText;
+            
+            // Safe escape characters
+            html = html.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+            // Markdown headings
+            html = html.replace(/^### (.*$)/gim, '<h5 class="text-xs font-bold text-purple-300 mt-4 mb-2">$1</h5>');
+            html = html.replace(/^## (.*$)/gim, '<h4 class="text-sm font-bold text-pink-400 mt-5 mb-2 border-l-2 border-pink-500 pl-2">$1</h4>');
+            html = html.replace(/^# (.*$)/gim, '<h3 class="text-base font-bold text-white mt-6 mb-3">$1</h3>');
+
+            // Bold styling
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong class="text-yellow-300 font-bold">$1</strong>');
+            
+            // List nesting
+            html = html.replace(/^\s*-\s+(.*$)/gim, '<li class="ml-4 list-disc text-slate-300 pl-1 py-0.5">$1</li>');
+
+            // Handle newline spaces
+            html = html.replace(/\n/g, "<br>");
+
+            return html;
+        }
+
+        /* --------------------------------------------------
+           -------------------------------------------------- */
+        // AI CHAT ASSISTANT AGENT FOR DIRECT EDITING
+        function openAronaModal() {
+            document.getElementById("aronaModal").classList.remove("hidden");
+            document.getElementById("aronaMessageInput").focus();
+            
+            // Auto close mobile menu
+            if (window.innerWidth < 1024) {
+                toggleSidebar();
+            }
+        }
+
+        function closeAronaModal() {
+            document.getElementById("aronaModal").classList.add("hidden");
+        }
+
+        function handleAronaKeyDown(e) {
+            if (e.key === "Enter") {
+                sendToArona();
+            }
+        }
+
+        // Formats template instruction into text box
+        function insertChatTemplate(type) {
+            const input = document.getElementById("aronaMessageInput");
+            if (type === 'add') {
+                input.value = "山田次郎さんの直下に、シロコさんをID BX-465、紹介コード SHIRO5、ランク V3、運用額 5000で追加してください";
+            } else if (type === 'edit') {
+                input.value = "佐藤花子さんの自己運用額を 25000 に更新してください";
+            } else if (type === 'gold') {
+                input.value = "山田次郎さんの表示スタイルを重要メンバーに設定してください";
+            } else if (type === 'minimal') {
+                input.value = "高橋ケンさんを極小表示（名前のみコンパクト）に変更してください";
+            } else if (type === 'delete') {
+                input.value = "高橋ケンさんを組織から削除してください";
+            }
+            input.focus();
+        }
+
+        // Format a chat bubble inside the dialog modal
+        function appendAronaChatBubble(sender, text) {
+            const chatBody = document.getElementById("aronaChatBody");
+            const bubbleWrap = document.createElement("div");
+            bubbleWrap.className = `flex items-start gap-3 ${sender === 'user' ? 'justify-end' : ''} animate-fadeIn`;
+
+            const isArona = sender === 'arona';
+            
+            const avatarHtml = isArona 
+                ? `<div class="w-8 h-8 rounded-full bg-cyan-500/20 border border-cyan-400 flex items-center justify-center shrink-0">
+                       <i class="fa-solid fa-robot text-xs text-cyan-400"></i>
+                   </div>`
+                : `<div class="w-8 h-8 rounded-full bg-indigo-500/20 border border-indigo-400 flex items-center justify-center shrink-0">
+                       <i class="fa-solid fa-user-tie text-xs text-indigo-400"></i>
+                   </div>`;
+
+            const nameText = isArona ? 'AIアシスタント' : '管理者様';
+            const nameColor = isArona ? 'text-cyan-300' : 'text-indigo-300';
+            const bubbleBg = isArona ? 'bg-slate-800 border-slate-700 rounded-tl-none' : 'bg-brand-950/40 border-brand-800/80 rounded-tr-none';
+
+            bubbleWrap.innerHTML = `
+                ${isArona ? avatarHtml : ''}
+                <div class="${bubbleBg} border p-3 rounded-2xl max-w-[85%] text-xs text-slate-200">
+                    <p class="font-bold ${nameColor} mb-1">${nameText}</p>
+                    <p class="whitespace-pre-wrap leading-relaxed">${escapeHTML(text)}</p>
+                </div>
+                ${!isArona ? avatarHtml : ''}
+            `;
+
+            chatBody.appendChild(bubbleWrap);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        // Direct AI Agent Action: Update entire structure based on Natural Language Request
+        async function sendToArona() {
+            const inputEl = document.getElementById("aronaMessageInput");
+            const instruction = inputEl.value.trim();
+            if (!instruction) return;
+
+            const apiKey = localStorage.getItem("bitrade_x_gemini_api_key");
+            if (!apiKey) {
+                alertBox("APIキー未登録", "まずセキュリティ設定の「API連携設定」よりGemini APIキーを登録・保存してください。", "error");
+                return;
+            }
+
+            // Clear Input and display user message in bubble
+            inputEl.value = "";
+            appendAronaChatBubble("user", instruction);
+
+            // Display thinking spinner
+            const thinkingEl = document.getElementById("aronaThinking");
+            thinkingEl.classList.remove("hidden");
+
+            const systemPrompt = `あなたは組織図データ管理をサポートする優秀なAIデータ編集アシスタントです。
+ユーザーのことを「管理者様」または「ユーザー様」と呼び、非常に丁寧でプロフェッショナル、かつ簡潔で正確な日本語で対応してください。キャラクターのなりきりやアニメ要素は完全に排除してください。
+
+あなたは管理者様からの自然言語によるデータ編集指示（追加、変更、削除など）を正確に分析し、現在提供されている組織図JSONデータを『適切に書き換え』てください。
+**必ず「AIアシスタントとしての丁寧な返答メッセージ」と「編集・上書きを反映した新しいツリー全体のJSONデータ」の両方を含むJSONオブジェクトを直接出力**してください。
+
+現在、各ノードには以下のデータフィールドが存在します：
+- id: 文字列 (ユニークID、自動生成、例: "bx_node_xxxx")
+- name: 文字列 (名前)
+- userId: 文字列 (ユーザーID)
+- refCode: 文字列 (紹介コード)
+- rank: 文字列 ("V0" から "V6" のうち一つ)
+- investment: 数値型 (自己運用額、例: 10000)
+- displayMode: 文字列 (表示優先度・スタイル指定、"gold" = 重要/ゴールド強調、"normal" = 標準、"minimal" = 極小/名前のみコンパクト)
+- memo: 文字列 (紹介用メモ)
+- collapsed: ブーリアン (折りたたみ状態、通常は false)
+- children: 配列 (子ノードのリスト)
+
+指示文の中で「〜を重要メンバーにして」「〜をゴールド強調に」「表示スタイルを標準に」「〜さんを極小表示に」「名前のみ表示に変えて」などのスタイル・配置指示があれば、その通り displayMode プロパティ（"gold", "normal", "minimal"）を書き換えてください。
+また、自己運用額に関する追加や変更指示があれば、investmentフィールドを数値型で更新してください。
+
+回答フォーマットは、必ず以下の形式の有効なJSON単一オブジェクトとして返してください。Markdownのコードブロック（\`\`\`jsonなど）や余計な前置き・解説テキストは一切含めてはなりません。システムで正しくパースできなくなってしまいます。
+
+【期待するJSONスキーマ】
+{
+  "reply": "管理者様、山田次郎さんの直下に佐藤一郎さんを新しく追加し、運用額を5,000ドル、ツリー表示スタイルを極小（名前のみスリム配置）に設定した上でツリー情報を更新いたしました。ご確認ください。",
+  "success": true,
+  "updatedTree": {
+    "id": "bx_root_001",
+    "name": "...",
+    "userId": "...",
+    "refCode": "...",
+    "rank": "...",
+    "investment": 50000,
+    "displayMode": "gold",
+    "memo": "...",
+    "collapsed": false,
+    "children": [
+      // 更新後の完全なツリー構造
+    ]
+  }
+}
+
+【注意事項】
+1. 指示されたメンバーの名前や系列関係がツリーに存在するか、注意深く探索してください。
+2. 追加の際、新メンバーのユニークなID（"bx_node_（タイムスタンプ等）"形式）を必ず新しく割り振ってください。指定がない場合のdisplayModeはデフォルト「"normal"」とします。
+3. 管理者様の指示が曖昧で処理が不可能な場合は、以下のように success: false にして、丁寧に聞き返すメッセージのみを返してください。
+{
+  "reply": "申し訳ございません。山田次郎というメンバーの名前が組織内に見つからなかったため、新しくメンバーを追加することができませんでした。もう一度お名前をご確認いただけますでしょうか。",
+  "success": false,
+  "updatedTree": null
+}`;
+
+            const userPrompt = `現在のBitrade X組織図JSONデータ：
+${JSON.stringify(orgTreeData, null, 2)}
+
+管理者様からの編集指示：
+「${instruction}」
+
+上記の指示に従ってツリーデータを書き換えて、指定されたJSON構造でレスポンスしてください。`;
+
+            try {
+                // Fetch Gemini API response
+                const rawJsonResult = await fetchGeminiAPI(userPrompt, systemPrompt);
+                
+                // Clean result if AI added markdown codes wrapper despite instruction
+                let cleanJson = rawJsonResult.trim();
+                if (cleanJson.startsWith("```")) {
+                    cleanJson = cleanJson.replace(/^```json/g, "").replace(/^```/g, "").replace(/```$/g, "").trim();
+                }
+
+                // Parse
+                const responseData = JSON.parse(cleanJson);
+                thinkingEl.classList.add("hidden");
+
+                if (responseData.success && responseData.updatedTree) {
+                    // Check schema correctness
+                    const isValid = validateTreeStructure(responseData.updatedTree);
+                    if (isValid) {
+                        // Update global state and persist
+                        orgTreeData = responseData.updatedTree;
+                        saveToStorage();
+                        renderTree();
+                        
+                        // Display response bubble
+                        appendAronaChatBubble("arona", responseData.reply);
+                        alertBox("自動編集完了", "組織図データを自動で更新しました。", "success");
+                    } else {
+                        appendAronaChatBubble("arona", "AIアシスタント：データ生成プロセスで無効な階層構造が出現したため、安全のために更新を破棄しました。");
+                    }
+                } else {
+                    // Fail cases described by AI
+                    appendAronaChatBubble("arona", responseData.reply || "ご指示の内容を正しく解析できませんでした。恐れ入りますが、指示の内容をご確認のうえ、もう一度お試しください。");
+                }
+
+            } catch (error) {
+                thinkingEl.classList.add("hidden");
+                appendAronaChatBubble("arona", `申し訳ございません。指示を元にしたデータの書き換え中に、エラーが発生いたしました。\n【エラー内容】: ${error.message}`);
+            }
+        }
+    </script>
+</body>
+</html>
