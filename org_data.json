@@ -1,0 +1,100 @@
+{
+  "id": "bx_root_001",
+  "name": "ビートレード太郎",
+  "userId": "BX-LDR-777",
+  "refCode": "LEADER7",
+  "rank": "V6",
+  "investment": 50000,
+  "displayMode": "gold",
+  "memo": "Bitrade X 日本統括リーダー。グループ全体のファウンダー。",
+  "collapsed": false,
+  "children": [
+    {
+      "id": "bx_node_101",
+      "name": "山田 次郎",
+      "userId": "BX-99021",
+      "refCode": "YMD99",
+      "rank": "V5",
+      "investment": 25000,
+      "displayMode": "gold",
+      "memo": "東京支店リーダー。拡大スピードトップレベル。",
+      "collapsed": false,
+      "children": [
+        {
+          "id": "bx_node_201",
+          "name": "佐藤 花子",
+          "userId": "BX-22091",
+          "refCode": "STH88",
+          "rank": "V3",
+          "investment": 8000,
+          "displayMode": "normal",
+          "memo": "SNSでのマーケティング担当。女性グループ構築中。",
+          "collapsed": false,
+          "children": []
+        },
+        {
+          "id": "bx_node_202",
+          "name": "鈴木 一郎",
+          "userId": "BX-33012",
+          "refCode": "SZK12",
+          "rank": "V4",
+          "investment": 15000,
+          "displayMode": "normal",
+          "memo": "セミナー講師。投資家コミュニティ運営。",
+          "collapsed": false,
+          "children": [
+            {
+              "id": "bx_node_301",
+              "name": "高橋 ケン",
+              "userId": "BX-55410",
+              "refCode": "KEN55",
+              "rank": "V1",
+              "investment": 3000,
+              "displayMode": "minimal",
+              "memo": "鈴木の直紹介。初心者育成枠。",
+              "collapsed": false,
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bx_node_102",
+      "name": "田中 健太",
+      "userId": "BX-88129",
+      "refCode": "TNK88",
+      "rank": "V4",
+      "investment": 12000,
+      "displayMode": "normal",
+      "memo": "関西コアメンバー。実業家繋がり多し。",
+      "collapsed": false,
+      "children": [
+        {
+          "id": "bx_node_203",
+          "name": "渡辺 絵美",
+          "userId": "BX-11822",
+          "refCode": "EMI11",
+          "rank": "V2",
+          "investment": 5000,
+          "displayMode": "minimal",
+          "memo": "Webデザイナー。コミュニティ広報。",
+          "collapsed": false,
+          "children": []
+        },
+        {
+          "id": "bx_node_204",
+          "name": "伊藤 剛",
+          "userId": "BX-44810",
+          "refCode": "ITO44",
+          "rank": "V0",
+          "investment": 1000,
+          "displayMode": "minimal",
+          "memo": "2026年新規紹介登録。これから育成。",
+          "collapsed": false,
+          "children": []
+        }
+      ]
+    }
+  ]
+}
