@@ -205,7 +205,7 @@
         
         <!-- Top Toolbar Actions -->
         <div class="flex items-center gap-1.5 text-xs">
-            <button onclick="saveToGitHub()" class="bg-blue-950/40 hover:bg-blue-900/40 text-blue-300 hover:text-blue-200 p-2 md:px-3 py-2 rounded-lg transition flex items-center gap-1.5 border border-blue-900/40" title="Save to GitHub">
+            <button id="saveToGitHubBtn" onclick="saveToGitHub()" class="bg-blue-950/40 hover:bg-blue-900/40 text-blue-300 hover:text-blue-200 p-2 md:px-3 py-2 rounded-lg transition flex items-center gap-1.5 border border-blue-900/40" title="Save to GitHub">
                 <i class="fa-brands fa-github"></i> <span class="hidden sm:inline">Save to GitHub</span>
             </button>
             <button onclick="loadFromGitHub()" class="bg-blue-950/40 hover:bg-blue-900/40 text-blue-300 hover:text-blue-200 p-2 md:px-3 py-2 rounded-lg transition flex items-center gap-1.5 border border-blue-900/40" title="Load from GitHub">
@@ -1555,6 +1555,10 @@
 
         // Save current app data to the GitHub repository via API
         async function saveToGitHub() {
+            const confirmed = window.confirm("Are you sure you want to save? This will overwrite the data on GitHub.");
+            if (!confirmed) {
+                return;
+            }
             try {
                 const response = await fetch('/api/github-data', {
                     method: 'POST',
@@ -1679,6 +1683,47 @@
             }
 
             document.getElementById('rankStatsBars').innerHTML = barsHtml;
+            updateSaveButtonState();
+        }
+
+        // Check if node is identical to demo data node (recursively, ignoring collapsed field)
+        function isSameNode(node1, node2) {
+            if (!node1 || !node2) return node1 === node2;
+            if (node1.id !== node2.id ||
+                node1.name !== node2.name ||
+                node1.userId !== node2.userId ||
+                node1.refCode !== node2.refCode ||
+                node1.rank !== node2.rank ||
+                Number(node1.investment || 0) !== Number(node2.investment || 0) ||
+                node1.displayMode !== node2.displayMode ||
+                (node1.memo || '').trim() !== (node2.memo || '').trim()) {
+                return false;
+            }
+            const children1 = node1.children || [];
+            const children2 = node2.children || [];
+            if (children1.length !== children2.length) return false;
+            for (let i = 0; i < children1.length; i++) {
+                if (!isSameNode(children1[i], children2[i])) return false;
+            }
+            return true;
+        }
+
+        // Disable save to GitHub button if the tree is identical to initial demo data
+        function updateSaveButtonState() {
+            const saveBtn = document.getElementById("saveToGitHubBtn");
+            if (!saveBtn) return;
+            const isDemo = isSameNode(orgTreeData, DEFAULT_TREE);
+            if (isDemo) {
+                saveBtn.disabled = true;
+                saveBtn.classList.add("opacity-40", "cursor-not-allowed");
+                saveBtn.classList.remove("hover:bg-blue-900/40", "hover:text-blue-200");
+                saveBtn.title = "Save to GitHub (Disabled: current data is identical to initial demo data)";
+            } else {
+                saveBtn.disabled = false;
+                saveBtn.classList.remove("opacity-40", "cursor-not-allowed");
+                saveBtn.classList.add("hover:bg-blue-900/40", "hover:text-blue-200");
+                saveBtn.title = "Save to GitHub";
+            }
         }
 
 
