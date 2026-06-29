@@ -183,43 +183,6 @@
 </head>
 <body class="h-full flex flex-col font-sans antialiased overflow-hidden select-none">
 
-    <!-- Password Protection Gate Overlay -->
-    <div id="passwordGate" class="fixed inset-0 bg-slate-950 z-50 flex flex-col items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 md:p-8 shadow-2xl text-center space-y-6">
-            <!-- App Logo / Symbol inside gate -->
-            <div class="inline-flex bg-gradient-to-tr from-brand-600 to-cyan-400 p-4 rounded-2xl shadow-xl shadow-brand-950/40 text-white animate-bounce">
-                <i class="fa-solid fa-shield-halved text-3xl"></i>
-            </div>
-            
-            <div class="space-y-1.5">
-                <h2 class="text-xl md:text-2xl font-bold tracking-wider text-white">Security Gate</h2>
-                <p class="text-xs text-slate-400">Bitrade X 組織図管理システムは保護されています</p>
-            </div>
-
-            <!-- Password Form -->
-            <div class="space-y-4 pt-2">
-                <div class="relative">
-                    <input type="password" id="gatePasswordInput" onkeydown="handleGateKeyDown(event)" placeholder="パスワードを入力してください" 
-                           class="w-full bg-slate-850 text-slate-100 border border-slate-700 rounded-xl px-4 py-3 text-center text-sm focus:outline-none focus:border-brand-500 font-mono tracking-widest placeholder-slate-500">
-                    <span class="absolute left-4 top-3.5 text-slate-500">
-                        <i class="fa-solid fa-lock"></i>
-                    </span>
-                </div>
-                
-                <button onclick="checkPassword()" class="w-full bg-brand-600 hover:bg-brand-500 active:scale-95 text-white font-medium py-3 rounded-xl transition text-sm shadow-lg shadow-brand-900/30 flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-unlock-keyhole"></i> ロック解除
-                </button>
-                
-                <p class="text-[10px] text-slate-500 italic">
-                    ※初期パスワード： <span class="font-mono text-slate-400 select-all">bitradex777</span>
-                </p>
-                
-                <div id="gateErrorMsg" class="text-xs text-rose-400 font-medium hidden">
-                    パスワードが正しくありません。
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- MAIN APP INTERFACE (Unlocked) -->
     <!-- App Header & Navigation -->
@@ -242,6 +205,12 @@
         
         <!-- Top Toolbar Actions -->
         <div class="flex items-center gap-1.5 text-xs">
+            <button onclick="saveToGitHub()" class="bg-blue-950/40 hover:bg-blue-900/40 text-blue-300 hover:text-blue-200 p-2 md:px-3 py-2 rounded-lg transition flex items-center gap-1.5 border border-blue-900/40" title="Save to GitHub">
+                <i class="fa-brands fa-github"></i> <span class="hidden sm:inline">Save to GitHub</span>
+            </button>
+            <button onclick="loadFromGitHub()" class="bg-blue-950/40 hover:bg-blue-900/40 text-blue-300 hover:text-blue-200 p-2 md:px-3 py-2 rounded-lg transition flex items-center gap-1.5 border border-blue-900/40" title="Load from GitHub">
+                <i class="fa-solid fa-cloud-arrow-down"></i> <span class="hidden sm:inline">Load from GitHub</span>
+            </button>
             <button onclick="exportJSON()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white p-2 md:px-3 py-2 rounded-lg transition flex items-center gap-1.5 border border-slate-700" title="バックアップ">
                 <i class="fa-solid fa-file-export"></i> <span class="hidden sm:inline">書き出し</span>
             </button>
@@ -251,10 +220,6 @@
             </label>
             <button onclick="resetToDemo()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white p-2 md:px-3 py-2 rounded-lg transition flex items-center gap-1.5 border border-slate-700" title="デモに戻す">
                 <i class="fa-solid fa-rotate"></i> <span class="hidden sm:inline">デモ</span>
-            </button>
-            <!-- Lock Button (Logout) -->
-            <button onclick="lockApp()" class="bg-rose-950/40 hover:bg-rose-900/40 text-rose-300 hover:text-rose-200 p-2 md:px-3 py-2 rounded-lg transition flex items-center gap-1.5 border border-rose-900/40 ml-1" title="画面をロックする">
-                <i class="fa-solid fa-lock"></i> <span class="hidden sm:inline">ロック</span>
             </button>
         </div>
     </header>
@@ -434,25 +399,6 @@
                             APIキーをブラウザに安全保存
                         </button>
                         <p class="text-[9px] text-slate-500 leading-tight">※キーは暗号化されずLocalStorageにのみ安全にローカル保存されます。</p>
-                    </div>
-                </div>
-
-                <div class="pt-2 border-t border-slate-800/60">
-                    <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-                        <i class="fa-solid fa-user-shield text-rose-400"></i> セキュリティ設定
-                    </h3>
-                    <div class="space-y-2">
-                        <div>
-                            <label class="block text-[10px] text-slate-400 mb-1">現在のパスワード</label>
-                            <input type="password" id="settingsCurrentPwd" class="w-full bg-slate-800 text-slate-100 border border-slate-700 rounded px-2.5 py-1 text-xs focus:outline-none focus:border-brand-500 font-mono" placeholder="••••••••">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] text-slate-400 mb-1">新しいパスワード</label>
-                            <input type="password" id="settingsNewPwd" class="w-full bg-slate-800 text-slate-100 border border-slate-700 rounded px-2.5 py-1 text-xs focus:outline-none focus:border-brand-500 font-mono" placeholder="••••••••">
-                        </div>
-                        <button onclick="changePassword()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 py-1.5 rounded text-xs font-semibold transition border border-slate-700">
-                            パスワードを変更
-                        </button>
                     </div>
                 </div>
             </div>
@@ -868,17 +814,6 @@
 
         // Initialize App on Window Load
         window.onload = function() {
-            // First: enforce Password Protection Screen check
-            const isUnlocked = sessionStorage.getItem("bitrade_x_unlocked") === "true";
-            const gate = document.getElementById("passwordGate");
-            
-            if (isUnlocked) {
-                gate.classList.add("hidden");
-            } else {
-                gate.classList.remove("hidden");
-                document.getElementById("gatePasswordInput").focus();
-            }
-
             // Load Gemini API Key
             const savedApiKey = localStorage.getItem("bitrade_x_gemini_api_key");
             if (savedApiKey) {
@@ -1618,6 +1553,53 @@
             reader.readAsText(file);
         }
 
+        // Save current app data to the GitHub repository via API
+        async function saveToGitHub() {
+            try {
+                const response = await fetch('/api/github-data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(orgTreeData),
+                });
+                if (response.ok) {
+                    alertBox("保存成功", "現在のアプリデータをGitHubリポジトリ（data.json）に保存しました。", "success");
+                } else {
+                    const result = await response.json();
+                    alertBox("保存失敗", `データの保存に失敗しました: ${result.error || '不明なエラー'}`, "error");
+                }
+            } catch (error) {
+                alertBox("ネットワークエラー", `サーバーへの接続に失敗しました: ${error.message}`, "error");
+            }
+        }
+
+        // Fetch and load data from the GitHub repository via API
+        async function loadFromGitHub() {
+            try {
+                const response = await fetch('/api/github-data');
+                if (response.ok) {
+                    const parsed = await response.json();
+                    const isValid = validateTreeStructure(parsed);
+                    if (isValid) {
+                        orgTreeData = parsed;
+                        saveToStorage();
+                        renderTree();
+                        alertBox("ロード成功", "GitHubリポジトリからデータを取得し、アプリに適用しました。", "success");
+                    } else {
+                        alertBox("検証エラー", "GitHubから取得したデータの構造が無効です。", "error");
+                    }
+                } else if (response.status === 404) {
+                    alertBox("データ未検出", "GitHub上に保存されたデータが見つかりませんでした。デフォルトのデモデータを使用します。", "error");
+                } else {
+                    const result = await response.json();
+                    alertBox("ロード失敗", `データの読み込みに失敗しました: ${result.error || '不明なエラー'}`, "error");
+                }
+            } catch (error) {
+                alertBox("ネットワークエラー", `サーバーへの接続に失敗しました: ${error.message}`, "error");
+            }
+        }
+
         // Restore structure to initial default demo
         function resetToDemo() {
             showModal("デモへのリセット確認", "すべての編集内容をリセットし、デモ用のサンプル系列に戻します。よろしいですか？", function() {
@@ -1699,59 +1681,7 @@
             document.getElementById('rankStatsBars').innerHTML = barsHtml;
         }
 
-        // Password & login protection
-        function checkPassword() {
-            const input = document.getElementById("gatePasswordInput").value;
-            const savedPwd = localStorage.getItem("bitrade_x_password") || "bitradex777";
-            const errorMsg = document.getElementById("gateErrorMsg");
 
-            if (input === savedPwd) {
-                sessionStorage.setItem("bitrade_x_unlocked", "true");
-                document.getElementById("passwordGate").classList.add("hidden");
-                errorMsg.classList.add("hidden");
-                alertBox("セキュリティ解除", "ログインに成功しました。ようこそ、管理者様！", "success");
-            } else {
-                errorMsg.classList.remove("hidden");
-                document.getElementById("gatePasswordInput").value = "";
-                document.getElementById("gatePasswordInput").focus();
-            }
-        }
-
-        function handleGateKeyDown(e) {
-            if (e.key === "Enter") {
-                checkPassword();
-            }
-        }
-
-        function lockApp() {
-            sessionStorage.removeItem("bitrade_x_unlocked");
-            document.getElementById("gatePasswordInput").value = "";
-            document.getElementById("passwordGate").classList.remove("hidden");
-            document.getElementById("gateErrorMsg").classList.add("hidden");
-            document.getElementById("gatePasswordInput").focus();
-            alertBox("ロック完了", "画面を安全にロックしました。", "success");
-        }
-
-        function changePassword() {
-            const currentPwd = document.getElementById("settingsCurrentPwd").value;
-            const newPwd = document.getElementById("settingsNewPwd").value.trim();
-            const actualCurrent = localStorage.getItem("bitrade_x_password") || "bitradex777";
-
-            if (!newPwd) {
-                alertBox("設定エラー", "新しいパスワードを入力してください。", "error");
-                return;
-            }
-
-            if (currentPwd !== actualCurrent) {
-                alertBox("設定エラー", "現在のパスワードが一致しません。", "error");
-                return;
-            }
-
-            localStorage.setItem("bitrade_x_password", newPwd);
-            document.getElementById("settingsCurrentPwd").value = "";
-            document.getElementById("settingsNewPwd").value = "";
-            alertBox("パスワード更新", "ログインパスワードを変更しました。次回起動時から有効です！", "success");
-        }
 
         // Custom interactive dialog popup model
         function showModal(title, text, confirmCallback) {
