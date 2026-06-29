@@ -252,6 +252,13 @@
             <button onclick="resetToDemo()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white p-2 md:px-3 py-2 rounded-lg transition flex items-center gap-1.5 border border-slate-700" title="デモに戻す">
                 <i class="fa-solid fa-rotate"></i> <span class="hidden sm:inline">デモ</span>
             </button>
+            <!-- GitHub Integration Buttons -->
+            <button onclick="saveToGitHub()" id="btnSaveToGitHub" class="bg-cyan-950/60 hover:bg-cyan-900/60 text-cyan-300 hover:text-cyan-200 p-2 md:px-3 py-2 rounded-lg transition flex items-center gap-1.5 border border-cyan-800/40" title="GitHubに保存">
+                <i class="fa-brands fa-github"></i> <span class="hidden sm:inline">GitHub保存</span>
+            </button>
+            <button onclick="loadFromGitHub()" id="btnLoadFromGitHub" class="bg-indigo-950/60 hover:bg-indigo-900/60 text-indigo-300 hover:text-indigo-200 p-2 md:px-3 py-2 rounded-lg transition flex items-center gap-1.5 border border-indigo-800/40" title="GitHubから読込">
+                <i class="fa-solid fa-cloud-arrow-down"></i> <span class="hidden sm:inline">GitHub読込</span>
+            </button>
             <!-- Lock Button (Logout) -->
             <button onclick="lockApp()" class="bg-rose-950/40 hover:bg-rose-900/40 text-rose-300 hover:text-rose-200 p-2 md:px-3 py-2 rounded-lg transition flex items-center gap-1.5 border border-rose-900/40 ml-1" title="画面をロックする">
                 <i class="fa-solid fa-lock"></i> <span class="hidden sm:inline">ロック</span>
@@ -434,6 +441,41 @@
                             APIキーをブラウザに安全保存
                         </button>
                         <p class="text-[9px] text-slate-500 leading-tight">※キーは暗号化されずLocalStorageにのみ安全にローカル保存されます。</p>
+                    </div>
+                </div>
+
+                <div class="pt-2 border-t border-slate-800/60">
+                    <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                        <i class="fa-brands fa-github text-cyan-400"></i> GitHub連携設定
+                    </h3>
+                    <div class="space-y-2">
+                        <div>
+                            <label class="block text-[10px] text-slate-400 mb-1">GitHub PAT (パーソナルアクセストークン)</label>
+                            <input type="password" id="githubToken" class="w-full bg-slate-800 text-slate-100 border border-slate-700 rounded px-2.5 py-1 text-[11px] focus:outline-none focus:border-brand-500 font-mono" placeholder="ghp_xxxxxxxx">
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[10px] text-slate-400 mb-0.5">リポジトリ所有者</label>
+                                <input type="text" id="githubOwner" class="w-full bg-slate-800 text-slate-100 border border-slate-700 rounded px-2 py-1 text-[11px] focus:outline-none focus:border-brand-500 font-mono" placeholder="owner">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-400 mb-0.5">リポジトリ名</label>
+                                <input type="text" id="githubRepo" class="w-full bg-slate-800 text-slate-100 border border-slate-700 rounded px-2 py-1 text-[11px] focus:outline-none focus:border-brand-500 font-mono" placeholder="repo">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[10px] text-slate-400 mb-0.5">ブランチ</label>
+                                <input type="text" id="githubBranch" class="w-full bg-slate-800 text-slate-100 border border-slate-700 rounded px-2 py-1 text-[11px] focus:outline-none focus:border-brand-500 font-mono" placeholder="main">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-400 mb-0.5">保存ファイル名</label>
+                                <input type="text" id="githubPath" class="w-full bg-slate-800 text-slate-100 border border-slate-700 rounded px-2 py-1 text-[11px] focus:outline-none focus:border-brand-500 font-mono" placeholder="org_data.json">
+                            </div>
+                        </div>
+                        <button onclick="saveGitHubSettings()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 py-1.5 rounded text-[10px] font-semibold transition border border-slate-700">
+                            GitHub設定をブラウザに安全保存
+                        </button>
                     </div>
                 </div>
 
@@ -885,6 +927,40 @@
                 document.getElementById("settingsApiKey").value = savedApiKey;
             }
 
+            // Load GitHub Settings
+            const savedGhToken = localStorage.getItem("bitrade_x_github_token") || "";
+            const savedGhOwner = localStorage.getItem("bitrade_x_github_owner") || "";
+            const savedGhRepo = localStorage.getItem("bitrade_x_github_repo") || "";
+            const savedGhBranch = localStorage.getItem("bitrade_x_github_branch") || "main";
+            const savedGhPath = localStorage.getItem("bitrade_x_github_path") || "org_data.json";
+
+            document.getElementById("githubToken").value = savedGhToken;
+            document.getElementById("githubOwner").value = savedGhOwner;
+            document.getElementById("githubRepo").value = savedGhRepo;
+            document.getElementById("githubBranch").value = savedGhBranch;
+            document.getElementById("githubPath").value = savedGhPath;
+
+            // Fetch default repo info from Netlify Function if Owner or Repo is not set
+            if (!savedGhOwner || !savedGhRepo) {
+                fetch('/.netlify/functions/github-config')
+                    .then(res => {
+                        if (!res.ok) throw new Error("HTTP error " + res.status);
+                        return res.json();
+                    })
+                    .then(data => {
+                        if (data.owner && !document.getElementById("githubOwner").value) {
+                            document.getElementById("githubOwner").value = data.owner;
+                        }
+                        if (data.repo && !document.getElementById("githubRepo").value) {
+                            document.getElementById("githubRepo").value = data.repo;
+                        }
+                        if (data.branch && (!savedGhBranch || savedGhBranch === "main")) {
+                            document.getElementById("githubBranch").value = data.branch;
+                        }
+                    })
+                    .catch(err => console.error("Error fetching github default config:", err));
+            }
+
             // Load Data
             const savedData = localStorage.getItem("bitrade_x_org_data");
             if (savedData) {
@@ -911,6 +987,164 @@
             const key = document.getElementById("settingsApiKey").value.trim();
             localStorage.setItem("bitrade_x_gemini_api_key", key);
             alertBox("設定保存", "Gemini APIキーを安全に保存しました。", "success");
+        }
+
+        // Save GitHub settings
+        function saveGitHubSettings() {
+            const token = document.getElementById("githubToken").value.trim();
+            const owner = document.getElementById("githubOwner").value.trim();
+            const repo = document.getElementById("githubRepo").value.trim();
+            const branch = document.getElementById("githubBranch").value.trim();
+            const path = document.getElementById("githubPath").value.trim();
+
+            localStorage.setItem("bitrade_x_github_token", token);
+            localStorage.setItem("bitrade_x_github_owner", owner);
+            localStorage.setItem("bitrade_x_github_repo", repo);
+            localStorage.setItem("bitrade_x_github_branch", branch);
+            localStorage.setItem("bitrade_x_github_path", path);
+
+            alertBox("設定保存", "GitHub連携設定を安全に保存しました。", "success");
+        }
+
+        // Save state to GitHub
+        async function saveToGitHub() {
+            const token = localStorage.getItem("bitrade_x_github_token") || document.getElementById("githubToken").value.trim();
+            const owner = document.getElementById("githubOwner").value.trim();
+            const repo = document.getElementById("githubRepo").value.trim();
+            const branch = document.getElementById("githubBranch").value.trim() || "main";
+            const path = document.getElementById("githubPath").value.trim() || "org_data.json";
+
+            if (!token) {
+                alertBox("GitHub未設定", "GitHubのパーソナルアクセストークン(PAT)を設定してください。左メニューのGitHub連携設定より入力・保存できます。", "error");
+                // Open left sidebar if drawer or show settings context
+                return;
+            }
+            if (!owner || !repo) {
+                alertBox("GitHub未設定", "GitHubのリポジトリ所有者およびリポジトリ名を設定してください。左メニューのGitHub連携設定より入力・保存できます。", "error");
+                return;
+            }
+
+            const btn = document.getElementById("btnSaveToGitHub");
+            const originalHTML = btn.innerHTML;
+            
+            // Set loading state
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> <span class="hidden sm:inline">保存中...</span>`;
+
+            try {
+                // Step 1: Fetch current file SHA (if it exists) to allow updating
+                const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`;
+                let sha = null;
+                
+                const getRes = await fetch(url, {
+                    headers: {
+                        "Authorization": `token ${token}`,
+                        "Accept": "application/vnd.github.v3+json"
+                    }
+                });
+
+                if (getRes.status === 200) {
+                    const getData = await getRes.json();
+                    sha = getData.sha;
+                } else if (getRes.status !== 404) {
+                    const errData = await getRes.json().catch(() => ({}));
+                    throw new Error(errData.message || `GitHub API returned status ${getRes.status} on SHA fetch`);
+                }
+
+                // Step 2: Push commit with JSON data
+                const payload = {
+                    message: "Update organization chart data [automated]",
+                    content: btoa(unescape(encodeURIComponent(JSON.stringify(orgTreeData, null, 2)))),
+                    branch: branch
+                };
+                if (sha) {
+                    payload.sha = sha;
+                }
+
+                const putRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+                    method: "PUT",
+                    headers: {
+                        "Authorization": `token ${token}`,
+                        "Content-Type": "application/json",
+                        "Accept": "application/vnd.github.v3+json"
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!putRes.ok) {
+                    const errData = await putRes.json().catch(() => ({}));
+                    throw new Error(errData.message || `GitHub API returned status ${putRes.status} on file write`);
+                }
+
+                alertBox("保存成功", "組織図データをGitHubに正常にコミット&プッシュしました！", "success");
+            } catch (err) {
+                console.error("Save to GitHub failed:", err);
+                alertBox("保存失敗", `GitHubへの保存に失敗しました: ${err.message}`, "error");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+            }
+        }
+
+        // Load state from GitHub
+        async function loadFromGitHub() {
+            const token = localStorage.getItem("bitrade_x_github_token") || document.getElementById("githubToken").value.trim();
+            const owner = document.getElementById("githubOwner").value.trim();
+            const repo = document.getElementById("githubRepo").value.trim();
+            const branch = document.getElementById("githubBranch").value.trim() || "main";
+            const path = document.getElementById("githubPath").value.trim() || "org_data.json";
+
+            if (!owner || !repo) {
+                alertBox("GitHub未設定", "GitHubのリポジトリ所有者およびリポジトリ名を設定してください。左メニューのGitHub連携設定より入力・保存できます。", "error");
+                return;
+            }
+
+            const btn = document.getElementById("btnLoadFromGitHub");
+            const originalHTML = btn.innerHTML;
+            
+            // Set loading state
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> <span class="hidden sm:inline">読込中...</span>`;
+
+            try {
+                const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`;
+                
+                const headers = {
+                    "Accept": "application/vnd.github.v3+json"
+                };
+                if (token) {
+                    headers["Authorization"] = `token ${token}`;
+                }
+
+                const res = await fetch(url, { headers });
+
+                if (res.status === 404) {
+                    throw new Error(`指定されたファイル (${path}) がブランチ (${branch}) 内に見つかりません。`);
+                } else if (!res.ok) {
+                    const errData = await res.json().catch(() => ({}));
+                    throw new Error(errData.message || `GitHub API returned status ${res.status}`);
+                }
+
+                const data = await res.json();
+                const decodedContent = decodeURIComponent(escape(atob(data.content.replace(/\s/g, ""))));
+                const parsedData = JSON.parse(decodedContent);
+
+                if (parsedData && parsedData.id && parsedData.name) {
+                    orgTreeData = parsedData;
+                    saveToStorage();
+                    renderTree();
+                    updateStatistics();
+                    alertBox("読込成功", "GitHubから最新の組織図データを正常に読み込み、反映しました！", "success");
+                } else {
+                    throw new Error("無効な組織ツリー構造データです。");
+                }
+            } catch (err) {
+                console.error("Load from GitHub failed:", err);
+                alertBox("読込失敗", `GitHubからの読み込みに失敗しました: ${err.message}`, "error");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+            }
         }
 
         // Toggle layout compact mode
