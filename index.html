@@ -183,6 +183,31 @@
 </head>
 <body class="h-full flex flex-col font-sans antialiased overflow-hidden select-none">
 
+    <!-- PASSWORD GATE -->
+    <div id="password-gate" class="h-full w-full flex flex-col items-center justify-center bg-slate-950 text-slate-100 p-6 z-50">
+        <div class="max-w-md w-full bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl space-y-6 text-center">
+            <div class="inline-flex bg-brand-500/10 text-brand-400 p-4 rounded-full border border-brand-500/20 mb-2">
+                <i class="fa-solid fa-lock text-3xl text-brand-400"></i>
+            </div>
+            <div>
+                <h2 class="text-2xl font-bold tracking-wider text-white">システム保護</h2>
+                <p class="text-xs text-slate-400 mt-1">閲覧するにはパスコードを入力してください。</p>
+            </div>
+            
+            <div class="space-y-3">
+                <input type="password" id="gate-password" placeholder="パスコードを入力..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-center text-lg font-mono tracking-widest text-white focus:outline-none focus:border-brand-500 placeholder-slate-600 transition" autofocus onkeydown="if(event.key==='Enter') checkGatePassword()">
+                <p id="gate-error" class="text-rose-500 text-xs font-semibold hidden">パスコードが正しくありません。</p>
+            </div>
+            
+            <button onclick="checkGatePassword()" class="w-full bg-brand-600 hover:bg-brand-500 text-white font-bold py-3 px-4 rounded-xl transition shadow-lg text-sm">
+                ロック解除
+            </button>
+        </div>
+    </div>
+
+    <!-- MAIN APP WRAPPER (Hidden by default) -->
+    <div id="app-wrapper" class="hidden h-full flex flex-col">
+
 
     <!-- MAIN APP INTERFACE (Unlocked) -->
     <!-- App Header & Navigation -->
@@ -667,6 +692,23 @@
             </div>
         </div>
     </div>
+
+    </div> <!-- /#app-wrapper -->
+
+    <script>
+        function checkGatePassword() {
+            const passwordInput = document.getElementById("gate-password");
+            const errorMsg = document.getElementById("gate-error");
+            if (passwordInput.value === "8393") {
+                document.getElementById("password-gate").classList.add("hidden");
+                document.getElementById("app-wrapper").classList.remove("hidden");
+            } else {
+                errorMsg.classList.remove("hidden");
+                passwordInput.value = "";
+                passwordInput.focus();
+            }
+        }
+    </script>
 
     <script>
         // Default seed data representing Bitrade X network structure with investment & display configurations
