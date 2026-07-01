@@ -315,6 +315,14 @@
                         <input type="text" id="editName" class="w-full bg-slate-800 text-slate-100 border border-slate-700 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-brand-500">
                     </div>
 
+                    <!-- Manager Selection -->
+                    <div id="managerSelectContainer">
+                        <label class="block text-xs text-slate-400 font-medium mb-1">紹介元・マネージャー (親ノード)</label>
+                        <select id="editManagerId" class="w-full bg-slate-800 text-slate-100 border border-slate-700 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-brand-500">
+                            <!-- Populated dynamically via JS -->
+                        </select>
+                    </div>
+
                     <!-- Row: User ID & Referral Code -->
                     <div class="grid grid-cols-2 gap-3">
                         <div>
@@ -815,6 +823,58 @@
             return null;
         }
 
+        // Helper to recursively collect all employees
+        function getAllEmployees(node, list = []) {
+            if (!node) return list;
+            list.push({ id: node.id, name: node.name, userId: node.userId });
+            if (node.children) {
+                for (let child of node.children) {
+                    getAllEmployees(child, list);
+                }
+            }
+            return list;
+        }
+
+        // Helper to populate the manager selection dropdown
+        function populateManagerDropdown(activeNodeId) {
+            const selectEl = document.getElementById('editManagerId');
+            const containerEl = document.getElementById('managerSelectContainer');
+            if (!selectEl) return;
+
+            if (activeNodeId === orgTreeData.id) {
+                if (containerEl) {
+                    containerEl.classList.add('hidden');
+                }
+                return;
+            }
+
+            if (containerEl) {
+                containerEl.classList.remove('hidden');
+            }
+
+            selectEl.innerHTML = '';
+
+            const activeNode = findNodeById(orgTreeData, activeNodeId);
+            if (!activeNode) return;
+
+            const allEmployees = getAllEmployees(orgTreeData);
+            const validManagers = allEmployees.filter(emp => {
+                return !findNodeById(activeNode, emp.id);
+            });
+
+            const currentParent = findParentNode(orgTreeData, activeNodeId);
+
+            validManagers.forEach(emp => {
+                const option = document.createElement('option');
+                option.value = emp.id;
+                option.textContent = `${emp.name} (${emp.userId || 'ID未設定'})`;
+                if (currentParent && emp.id === currentParent.id) {
+                    option.selected = true;
+                }
+                selectEl.appendChild(option);
+            });
+        }
+
         // Initialize App on Window Load
         window.onload = function() {
             // Load Gemini API Key
@@ -1085,6 +1145,7 @@
             
             setEditRank(node.rank || 'V0');
             setDisplayModeUI(node.displayMode || 'normal');
+            populateManagerDropdown(id);
 
             // On mobile, automatically close sidebar after choosing to see node on canvas
             if (window.innerWidth < 1024 && event) {
@@ -1179,8 +1240,35 @@
             node.investment = Number(document.getElementById('editInvestment').value) || 0;
             node.displayMode = document.getElementById('editorContainer').dataset.activeDisplayMode || 'normal';
 
+            // Handle manager (parent) change if not the root node
+            if (activeNodeId !== orgTreeData.id) {
+                const newParentId = document.getElementById('editManagerId').value;
+                const currentParent = findParentNode(orgTreeData, activeNodeId);
+                
+                if (currentParent && currentParent.id !== newParentId) {
+                    const newParent = findNodeById(orgTreeData, newParentId);
+                    if (newParent) {
+                        // Remove from current parent
+                        currentParent.children = currentParent.children.filter(c => c.id !== activeNodeId);
+                        
+                        // Add to new parent
+                        if (!newParent.children) {
+                            newParent.children = [];
+                        }
+                        newParent.children.push(node);
+                        
+                        // Expand the new parent so the moved node is visible
+                        newParent.collapsed = false;
+                    }
+                }
+            }
+
             saveToStorage();
             renderTree();
+
+            if (activeNodeId !== orgTreeData.id) {
+                populateManagerDropdown(activeNodeId);
+            }
             
             // Update breadcrumbs and parent financial counters
             document.getElementById('canvasFocusName').innerText = `${node.name} (${node.rank})`;
