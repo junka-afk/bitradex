@@ -63,7 +63,7 @@
           "refCode": "不明",
           "rank": "V0",
           "investment": 469,
-          "displayMode": "minimal",
+          "displayMode": "normal",
           "memo": "たくま紹介",
           "collapsed": false,
           "children": []
@@ -82,7 +82,7 @@
         },
         {
           "id": "bx_node_1782903843912",
-          "name": "たくま紹介　MA",
+          "name": "後藤",
           "userId": "78431010929",
           "refCode": "",
           "rank": "V0",
