@@ -67,6 +67,18 @@
           "memo": "たくま紹介",
           "collapsed": false,
           "children": []
+        },
+        {
+          "id": "bx_node_1782903792651",
+          "name": "クリシャン",
+          "userId": "77626592950",
+          "refCode": "",
+          "rank": "V0",
+          "investment": 0,
+          "displayMode": "normal",
+          "memo": "",
+          "collapsed": false,
+          "children": []
         }
       ]
     },
