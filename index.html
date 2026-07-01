@@ -228,7 +228,7 @@
     <main class="flex-1 flex overflow-hidden relative">
 
         <!-- Mobile overlay background for active drawer -->
-        <div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-950/60 z-20 hidden lg:hidden backdrop-blur-sm"></div>
+        <div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-950/60 z-20 hidden lg:hidden"></div>
 
         <!-- Left Sidebar: Tools, Search & Info Panel -->
         <aside id="sidebar" class="w-80 md:w-96 bg-slate-900 border-r border-slate-800 flex flex-col shrink-0 overflow-y-auto z-25 absolute lg:static inset-y-0 left-0 mobile-sidebar lg:transform-none">
@@ -449,7 +449,7 @@
         <section class="flex-1 flex flex-col overflow-hidden bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-900 via-[#0a0f1d] to-[#04060d]">
             
             <!-- Floating Canvas Controller Bar -->
-            <div class="absolute top-4 right-4 z-20 flex items-center gap-1 bg-slate-900/90 border border-slate-800 p-1 rounded-lg shadow-2xl backdrop-blur-md">
+            <div class="absolute top-4 right-4 z-20 flex items-center gap-1 bg-slate-900/90 border border-slate-800 p-1 rounded-lg shadow-2xl">
                 <button onclick="zoomCanvas(0.1)" class="w-8 h-8 flex items-center justify-center rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition" title="ズームイン">
                     <i class="fa-solid fa-magnifying-glass-plus"></i>
                 </button>
@@ -475,7 +475,7 @@
 
             <!-- Dynamic Breadcrumb / Selected Person Tracker -->
             <div class="absolute top-4 left-4 z-20 pointer-events-none max-w-[calc(100%-160px)]">
-                <div class="bg-slate-900/80 border border-slate-800 px-3 py-1.5 rounded-lg shadow-lg backdrop-blur-md text-[11px] text-slate-300 flex items-center gap-1.5">
+                <div class="bg-slate-900/80 border border-slate-800 px-3 py-1.5 rounded-lg shadow-lg text-[11px] text-slate-300 flex items-center gap-1.5">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
                     <span class="truncate" id="canvasFocusName">全体を表示中</span>
                 </div>
@@ -503,7 +503,7 @@
     </main>
 
     <!-- Modal Notifications / Confirmations -->
-    <div id="customModal" class="fixed inset-0 bg-slate-950/80 z-40 flex items-center justify-center p-4 hidden backdrop-blur-sm">
+    <div id="customModal" class="fixed inset-0 bg-slate-950/80 z-40 flex items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
             <div class="flex items-center space-x-3 text-rose-400">
                 <div class="bg-rose-950/50 p-2.5 rounded-xl border border-rose-900/50">
@@ -526,7 +526,7 @@
     </div>
 
     <!-- AI Output & Interaction Modal Overlay (Default template) -->
-    <div id="aiModal" class="fixed inset-0 bg-slate-950/85 z-40 flex items-center justify-center p-4 hidden backdrop-blur-md">
+    <div id="aiModal" class="fixed inset-0 bg-slate-950/85 z-40 flex items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-purple-500/30 rounded-2xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl shadow-purple-950/50 overflow-hidden">
             <!-- AI Header -->
             <div class="bg-gradient-to-r from-indigo-950 via-purple-950 to-pink-950 px-6 py-4 border-b border-purple-900/30 flex items-center justify-between shrink-0">
@@ -582,7 +582,7 @@
     </div>
 
     <!-- AI CHAT ASSISTANT MODAL (DIRECT AI EDITING) -->
-    <div id="aronaModal" class="fixed inset-0 bg-slate-950/85 z-40 flex items-center justify-center p-4 hidden backdrop-blur-md">
+    <div id="aronaModal" class="fixed inset-0 bg-slate-950/85 z-40 flex items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-cyan-500/30 rounded-2xl w-full max-w-xl max-h-[85vh] flex flex-col shadow-2xl shadow-cyan-950/40 overflow-hidden">
             <!-- AI Assistant Header -->
             <div class="bg-gradient-to-r from-cyan-900 via-sky-950 to-blue-950 px-5 py-4 border-b border-cyan-800/30 flex items-center justify-between shrink-0">
