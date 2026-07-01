@@ -67,18 +67,6 @@
           "memo": "たくま紹介",
           "collapsed": false,
           "children": []
-        },
-        {
-          "id": "bx_node_1782709525810",
-          "name": "たくま紹介　C",
-          "userId": "78220825146",
-          "refCode": "REF555",
-          "rank": "V0",
-          "investment": 1657,
-          "displayMode": "normal",
-          "memo": "たくま紹介",
-          "collapsed": false,
-          "children": []
         }
       ]
     },
@@ -92,7 +80,20 @@
       "displayMode": "minimal",
       "memo": "たくま運用アカウント",
       "collapsed": false,
-      "children": []
+      "children": [
+        {
+          "id": "bx_node_1782709525810",
+          "name": "たくま紹介　C",
+          "userId": "78220825146",
+          "refCode": "REF555",
+          "rank": "V0",
+          "investment": 1657,
+          "displayMode": "minimal",
+          "memo": "たくま紹介",
+          "collapsed": false,
+          "children": []
+        }
+      ]
     },
     {
       "id": "bx_node_1782708632373",
