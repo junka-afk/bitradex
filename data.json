@@ -42,7 +42,20 @@
           "displayMode": "normal",
           "memo": "たくま紹介",
           "collapsed": false,
-          "children": []
+          "children": [
+            {
+              "id": "bx_node_1783079508483",
+              "name": "ごっちゃん",
+              "userId": "78513670795",
+              "refCode": "不明",
+              "rank": "V0",
+              "investment": 0,
+              "displayMode": "normal",
+              "memo": "",
+              "collapsed": false,
+              "children": []
+            }
+          ]
         },
         {
           "id": "bx_node_1782709274912",
