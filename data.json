@@ -162,10 +162,48 @@
           "refCode": "6LBEIO",
           "rank": "V0",
           "investment": 4049,
-          "displayMode": "normal",
+          "displayMode": "minimal",
           "memo": "",
           "collapsed": false,
-          "children": []
+          "children": [
+            {
+              "id": "bx_node_1783168756168",
+              "name": "北川サブ1",
+              "userId": "78573872761",
+              "refCode": "DQ6JCN",
+              "rank": "V0",
+              "investment": 0,
+              "displayMode": "normal",
+              "memo": "",
+              "collapsed": false,
+              "children": [
+                {
+                  "id": "bx_node_1783168822206",
+                  "name": "北川サブ2",
+                  "userId": "78574049374",
+                  "refCode": "3SFDH8",
+                  "rank": "V0",
+                  "investment": 0,
+                  "displayMode": "normal",
+                  "memo": "",
+                  "collapsed": false,
+                  "children": []
+                },
+                {
+                  "id": "bx_node_1783168909000",
+                  "name": "潤運用アカウント",
+                  "userId": "78574099513",
+                  "refCode": "R1341A",
+                  "rank": "V0",
+                  "investment": 0,
+                  "displayMode": "normal",
+                  "memo": "",
+                  "collapsed": false,
+                  "children": []
+                }
+              ]
+            }
+          ]
         },
         {
           "id": "bx_node_1782709060222",
