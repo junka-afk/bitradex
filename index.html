@@ -186,6 +186,49 @@
 </head>
 <body class="h-full flex flex-col font-sans antialiased overflow-hidden select-none">
 
+    <!-- Password Protection Overlay -->
+    <div id="password-overlay" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-950 px-4">
+        <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl text-center space-y-6">
+            <div class="inline-flex bg-gradient-to-tr from-brand-600 to-cyan-400 p-4 rounded-2xl shadow-lg">
+                <i class="fa-solid fa-lock text-3xl text-white"></i>
+            </div>
+            <div class="space-y-2">
+                <h1 class="text-2xl font-bold tracking-tight text-white">Bitrade X</h1>
+                <p class="text-sm text-slate-400">システムにアクセスするにはパスワードを入力してください。</p>
+            </div>
+            <div class="space-y-4">
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-500">
+                        <i class="fa-solid fa-key"></i>
+                    </span>
+                    <input type="password" id="password-input" class="w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-brand-500 placeholder-slate-600 text-center text-lg tracking-widest" placeholder="••••" autofocus onkeydown="if(event.key==='Enter') verifyPassword()">
+                </div>
+                <div id="password-error" class="hidden text-sm text-red-400 font-medium animate-pulse">
+                    <i class="fa-solid fa-triangle-exclamation mr-1"></i> パスワードが正しくありません
+                </div>
+                <button onclick="verifyPassword()" class="w-full py-3 px-4 bg-gradient-to-r from-brand-600 to-brand-700 hover:from-brand-500 hover:to-brand-600 text-white font-medium rounded-xl transition duration-200 shadow-lg shadow-brand-900/20 flex items-center justify-center gap-2">
+                    <span>認証</span>
+                    <i class="fa-solid fa-circle-check"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function verifyPassword() {
+            const input = document.getElementById('password-input');
+            const error = document.getElementById('password-error');
+            const overlay = document.getElementById('password-overlay');
+            if (input.value === '1234') {
+                overlay.style.display = 'none';
+            } else {
+                error.classList.remove('hidden');
+                input.value = '';
+                input.focus();
+            }
+        }
+    </script>
+
 
     <!-- MAIN APP INTERFACE (Unlocked) -->
     <!-- App Header & Navigation -->
