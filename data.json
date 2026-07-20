@@ -5,7 +5,7 @@
   "refCode": "IRMD9R",
   "rank": "V0",
   "investment": 50000,
-  "displayMode": "gold",
+  "displayMode": "minimal",
   "memo": "",
   "collapsed": false,
   "children": [
@@ -67,7 +67,20 @@
           "displayMode": "minimal",
           "memo": "たくま紹介",
           "collapsed": false,
-          "children": []
+          "children": [
+            {
+              "id": "bx_node_1784510570382",
+              "name": "吉岡サブ",
+              "userId": "79187072571",
+              "refCode": "不明",
+              "rank": "V0",
+              "investment": 0,
+              "displayMode": "minimal",
+              "memo": "",
+              "collapsed": false,
+              "children": []
+            }
+          ]
         },
         {
           "id": "bx_node_1782709342772",
@@ -151,7 +164,7 @@
       "refCode": "BJYVFO",
       "rank": "V0",
       "investment": 623,
-      "displayMode": "normal",
+      "displayMode": "minimal",
       "memo": "父　KYCまだ",
       "collapsed": false,
       "children": [
@@ -173,7 +186,7 @@
               "refCode": "DQ6JCN",
               "rank": "V0",
               "investment": 0,
-              "displayMode": "normal",
+              "displayMode": "minimal",
               "memo": "",
               "collapsed": false,
               "children": [
@@ -184,7 +197,7 @@
                   "refCode": "3SFDH8",
                   "rank": "V0",
                   "investment": 0,
-                  "displayMode": "normal",
+                  "displayMode": "minimal",
                   "memo": "",
                   "collapsed": false,
                   "children": []
@@ -196,7 +209,7 @@
                   "refCode": "R1341A",
                   "rank": "V0",
                   "investment": 0,
-                  "displayMode": "normal",
+                  "displayMode": "minimal",
                   "memo": "",
                   "collapsed": false,
                   "children": []
